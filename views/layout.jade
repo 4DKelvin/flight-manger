@@ -1,0 +1,98 @@
+doctype html
+html.no-js.fixed-layout
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    title 後台管理
+    meta(name='description', content='後台管理')
+    meta(name='keywords', content='index')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='renderer', content='webkit')
+    meta(http-equiv='Cache-Control', content='no-siteapp')
+    meta(name='apple-mobile-web-app-title', content='後台管理')
+    link(rel='stylesheet', href='http://cdn.amazeui.org/amazeui/2.6.2/css/amazeui.min.css')
+    link(rel='stylesheet', href='http://amazeui.org/css/admin.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    //if lte IE 9
+      p.browsehappy
+        | 你正在使用
+        strong 过时
+        | 的浏览器，Amaze UI 暂不支持。 请
+        a(href='http://browsehappy.com/', target='_blank') 升级浏览器
+        |   以获得更好的体验！
+    header.am-topbar.am-topbar-inverse.admin-header
+      .am-topbar-brand
+        strong 後台管理 &nbsp;
+        small 業務系統
+    .am-cf.admin-main
+      #admin-offcanvas.admin-sidebar.am-offcanvas
+        .am-offcanvas-bar.admin-offcanvas-bar
+          ul.am-list.admin-sidebar-list
+            li
+              a(href='/')
+                |  訂單管理
+            li
+              a(href='/?state=0')
+                |  訂單待確認
+            li
+              a(href='/?state=0')
+                |  订单确认成功待支付
+            li
+              a(href='/?state=0')
+                |  订座成功等待支付
+            li
+              a(href='/?state=0')
+                |  支付成功等待出票
+            li
+              a(href='/?state=0')
+                |  出票完成
+            li
+              a(href='/?state=0')
+                |  出票失败
+            li
+              a(href='/?state=0')
+                |  订单取消
+            li
+              a(href='')
+                |  改期申请待确认
+            li
+              a(href='')
+                |  改期申请待支付
+            li
+              a(href='')
+                |  支付成功待改期
+            li
+              a(href='')
+                |  改期完成
+            li
+              a(href='')
+                |  拒绝改期
+            li
+              a(href='')
+                |  改期取消
+
+      // content start
+      .admin-content
+        .admin-content-body
+          .am-cf.am-padding
+            .am-fl.am-cf
+              strong.am-text-primary.am-text-lg 首頁
+              |  /
+              small #{title}
+          block content
+        footer.admin-content-footer
+          hr
+          p.am-padding-left © 2019 , Inc. Licensed MIT license.
+      // content end
+    a.am-icon-btn.am-icon-th-list.am-show-sm-only.admin-menu(href='#', data-am-offcanvas="{target: '#admin-offcanvas'}")
+    //if lt IE 9
+      script(src='http://libs.baidu.com/jquery/1.11.1/jquery.min.js')
+      script(src='http://cdn.staticfile.org/modernizr/2.8.3/modernizr.js')
+      script(src='http://cdn.amazeui.org/amazeui/2.6.2/js/amazeui.ie8polyfill.min.js')
+    // [if (gte IE 9)|!(IE)] <!
+    script(src='http://amazeui.org/js/jquery.min.js')
+    // <![endif]
+    script(src='http://cdn.amazeui.org/amazeui/2.6.2/js/amazeui.min.js')
+    script(type='text/javascript').
+      console.log('init')

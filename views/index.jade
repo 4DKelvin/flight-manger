@@ -1,0 +1,70 @@
+extends layout
+
+block content
+  form.am-g(action='/',method='get')
+    .am-u-sm-12.am-u-md-3
+      input.am-form-field(type='text', name='start',  placeholder='起始日期时间', class='datetime-picker')
+    .am-u-sm-12.am-u-md-3
+      input.am-form-field(type='text', name='end', placeholder='结束日期时间', class='datetime-picker')
+    .am-u-sm-12.am-u-md-4
+      input.am-form-field(type='text', name='keyword', placeholder='关键字')
+    .am-u-sm-12.am-u-md-2
+      .am-input-group.am-input-group
+        span.am-input-group-btn
+          button.am-btn.am-btn-default(type='submit') 搜索
+  hr
+  #modal.am-modal.am-modal-no-btn(tabindex='-1')
+    .am-modal-dialog
+      .am-modal-hd
+        | 快速下单
+        a.am-close.am-close-spin(href='javascript: void(0)', data-am-modal-close='') ×
+      .am-modal-bd
+        .am-form.am-text-left
+          hr.am-margin-bottom-xs
+          .row.commons
+            .am-u-sm-12
+              stong.am-text-xs.am-padding-right 用户状态:
+              span.am-text-xs#user_status
+              .am-btn.am-fr.am-btn-xs.am-btn-warning.am-btn-refresh 刷新
+          .row
+            .am-u-sm-12
+              stong.am-text-xs.am-padding-right 订单状态:
+              span.am-text-xs#order_status 未下单
+          .row
+            .am-u-sm-12
+              stong.am-text-xs.am-padding-right 手机号码:
+              span.am-text-xs#order_phone
+          .row
+            .am-u-sm-12.am-margin-bottom-xs
+              stong.am-text-xs.am-padding-right 登录密码:
+              span.am-text-xs#order_password
+          hr
+          .row#items
+            .item.am-u-sm-12.am-text-nowrap
+              span.am-text-xs 券&nbsp;:&nbsp;
+              span.am-text-xs.name
+              span &nbsp;-&nbsp;
+              span.am-text-xs.amt
+          hr.am-margin-top-xs
+          .row
+            .am-u-sm-12
+              .am-form-group
+                label.am-text-xs
+                  span.am-padding-right-sm 下单价格
+                  small 原价:
+                  small#source_price
+
+                input#price.am-input-sm(type='text',name='price')
+          .row
+            .am-u-sm-12.am-margin-bottom
+              .am-btn.am-btn-sm.am-btn-block.am-btn-success.am-btn-submit 提交
+
+  .am-g
+    .am-u-sm-12
+      .am-alert.am-alert-success 没有任何订单记录.
+    .row
+      .am-u-sm-12.am-margin-bottom.am-text-right
+        a.am-btn.am-btn-xs.am-btn-success.am-margin-right(href='#') 上一页
+        span.am-btn.am-btn-xs.am-btn-default.am-margin-right 第 1 页
+        a.am-btn.am-btn-xs.am-btn-success(href='#') 下一页
+
