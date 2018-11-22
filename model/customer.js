@@ -1,4 +1,4 @@
-const plane_customer = require('./db.js').plane_customer
+const plane_customer = require('../db.js').plane_customer
 ;
 
 module.exports = {
