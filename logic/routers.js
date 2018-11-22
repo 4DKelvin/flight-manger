@@ -7,7 +7,7 @@ let Utils = require('./utils');
 
 /* GET home page. */
 router.get('/', async function (req, res, next) {
-    var orders = await Order.search(req.query.startDate, req.query.endDate, req.query.startDate, req.query.ticketNo, req.query.name, req.query.page || 1);
+    var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 1);
     res.render('index', {
         title: '訂單管理',
         orders: orders.map((o) => {
