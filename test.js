@@ -1,4 +1,4 @@
-const Api = require('./logic/api');
+const Api = require('./lib/flight');
 let test = async () => {
     let testDep = "SZX";//深圳起飛
     let testArr = "CTU";//成都到達

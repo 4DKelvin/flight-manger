@@ -9,11 +9,30 @@ module.exports = {
             })
         })
     },
+    insertOrUpdate: async function (objJson) {
+        let order = await this.findById(objJson.orderNo);
+        if (order) {
+            delete objJson._id;
+            await this.updateByCon({orderNo: objJson.orderNo}, objJson);
+            return await this.findById(objJson.orderNo);
+        } else {
+            await this.insert(objJson);
+            return await this.findById(objJson.orderNo);
+        }
+    },
     updateByCon: function (condition, updateStr) {
         return new Promise(function (resolve, reject) {
             plane_orders.updateMany(condition, updateStr, function (err, res) {
                 if (err) reject(err);
                 else resolve(res)
+            })
+        })
+    },
+    findById: function (orderNo) {
+        return new Promise(function (resolve, reject) {
+            plane_orders.findOne({orderNo: orderNo}, function (err, data) {
+                if (err) reject(err);
+                else resolve(data);
             })
         })
     },
@@ -74,21 +93,4 @@ module.exports = {
             })
         });
     }
-    // distanceType: String,
-    // flightNo: String,
-    // flightPosition: String,
-    // airport: String,
-    // time: Date,
-    // type: String,
-    // number: Number,
-    // price: Number,
-    // fuel: Number,
-    // totalPrice: Number,
-    // ticket: String,
-    // customers: Array,
-    // status: String,
-    // operator: String,
-    // lock: Boolean
-
-
 };
