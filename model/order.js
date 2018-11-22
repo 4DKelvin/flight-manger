@@ -34,7 +34,8 @@ module.exports = {
         })
     },
     search: function (startDate, endDate, orderNo, ticketNo, passengerName, page = 1) {
-        let condition = {};
+        let query = plane_orders.find({});
+
         if (startDate || endDate) {
             let createAt = {};
             if (startDate) {
@@ -43,20 +44,31 @@ module.exports = {
             if (endDate) {
                 createAt['$lte'] = Date.parse(endDate);
             }
-            condition['createAt'] = createAt;
+            query.where({
+                createAt: createAt
+            });
         }
         if (orderNo) {
-            condition['number'] = {$regex: '/' + orderNo + '/'};
+            query.where({
+                orderNo: new RegExp('^' + orderNo + '$', "i")
+            });
         }
         if (ticketNo) {
-            condition['ticket'] = {$regex: '/' + ticketNo + '/'};
+            query.where({
+                ticket: new RegExp('^' + ticketNo + '$', "i")
+            });
         }
         if (passengerName) {
-            condition['customers'] = {$elemMatch: {name: {$regex: '/' + passengerName + '/'}}};
+            query.where({
+                customers: {
+                    $elemMatch: {
+                        name: new RegExp('^' + passengerName + '$', "i")
+                    }
+                }
+            });
         }
-        console.log(condition);
         return new Promise((resolve, reject) => {
-            plane_orders.find(condition).skip(30 * page).limit(30).exec((err, res) => {
+            query.skip(30 * page).limit(30).exec((err, res) => {
                 if (err) reject(err);
                 else resolve(res);
             })

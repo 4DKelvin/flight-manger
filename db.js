@@ -8,8 +8,8 @@ module.exports = {
         flightPosition: String,
         airport: String,
         time: Number,
-        type: String,
-        number: Number,
+        orderType: String,
+        orderNo: String,
         price: Number,
         fuel: Number,
         totalPrice: Number,
@@ -21,7 +21,6 @@ module.exports = {
         lock: Boolean
     }),
     plane_customer: mongoose.model('plane_customer', {
-        type: String,
         name: String,
         sex: String,
         certificatesType: String,
