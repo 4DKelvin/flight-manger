@@ -1,5 +1,6 @@
 //const db = require('./orders')
-const db2 = require('./customer')
+const db = require('./customer')
+const orderDb = require('./db').plane_orderList;
 
 async function main(){
     // 条件查询
@@ -31,8 +32,25 @@ async function main(){
     console.log(await db.delByCon(condition));*/
 
     // customer 查询
-    var condition = {"sex":"男"};
-    console.log(await db2.findByCon(condition));
+    /*var condition = {"sex":"男"};
+    console.log(await db.findByCon());*/
+    //console.log(await orderDb.find());
+
+    var condition = {
+        "orderNo" : "5216899189144",
+        "orderTime" : "2018-10-25 16:54:58",
+        "type" : "单程",
+        "launchPlace" : "SHE",
+        "landPlace" : "KMG",
+        "flightTime" : "2018-12-25 16:54:58",
+        "number" : 5,
+        "price" : 700,
+        "status" : "支付成功等待出票",
+        "name" : "张三"
+    }
+
+    /*new orderDb(condition).save();*/
+    console.log(await orderDb.find());
 
 }
 

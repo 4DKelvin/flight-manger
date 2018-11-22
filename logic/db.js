@@ -14,6 +14,18 @@ module.exports = {
         fuel : Number,
         totalPrice : Number
     }),
+    plane_orderList:mongoose.model('plane_ordersList',{
+        orderNo : String,
+        orderTime : Date,
+        type : String,
+        launchPlace : String,
+        landPlace : String,
+        flightTime : Date,
+        number : Number,
+        price : Number,
+        status : String,
+        name : String,
+    }),
     plane_customer: mongoose.model('plane_customer', {
         type : String,
         name : String,

@@ -3,15 +3,25 @@ extends layout
 block content
   form.am-g(action='/',method='get')
     .am-u-sm-12.am-u-md-3
-      input.am-form-field(type='text', name='start',  placeholder='起始日期时间', class='datetime-picker')
-    .am-u-sm-12.am-u-md-3
-      input.am-form-field(type='text', name='end', placeholder='结束日期时间', class='datetime-picker')
-    .am-u-sm-12.am-u-md-4
-      input.am-form-field(type='text', name='keyword', placeholder='关键字')
-    .am-u-sm-12.am-u-md-2
-      .am-input-group.am-input-group
-        span.am-input-group-btn
-          button.am-btn.am-btn-default(type='submit') 搜索
+        | 订单日期
+        input.am-form-field.datetime-picker(type='text', name='start', placeholder='起始日期时间')
+      .am-u-sm-12.am-u-md-3
+        | 至
+        input.am-form-field.datetime-picker(type='text', name='end', placeholder='结束日期时间')
+      .am-u-sm-12.am-u-md-4
+        | 乘机人姓名：
+        input.am-form-field(type='text', name='name', placeholder='乘机人姓名')
+        <br/>
+      .am-u-sm-12.am-u-md-4
+        | 订单号：
+        input.am-form-field(type='text', name='orderId', placeholder='订单号')
+      .am-u-sm-12.am-u-md-4
+        | 票号：
+        input.am-form-field(type='text', name='tickerNo', placeholder='票号')
+      .am-u-sm-12.am-u-md-2
+        .am-input-group.am-input-group
+          span.am-input-group-btn
+            button.am-btn.am-btn-default(type='submit') 搜索
   hr
   #modal.am-modal.am-modal-no-btn(tabindex='-1')
     .am-modal-dialog
@@ -61,7 +71,37 @@ block content
 
   .am-g
     .am-u-sm-12
-      .am-alert.am-alert-success 没有任何订单记录.
+    #orderlist
+          table(width='100%', height='100%', border='1', cellspacing='0', cellpadding='0')
+            tbody
+              tr
+                th 订单号
+                th 订单日期
+                th 类型
+                th 起飞
+                th 到达
+                th 航班日期
+                th 人数
+                th 订单报价
+                th 订单状态
+                th 锁定人
+                th 操作
+              - each obj in orders
+                tr
+                   td
+                      input(value=obj.orderNo readonly='readonly' style="width: 100%; height: 100%" name="orderNo")
+                   td= obj.orderTime
+                   td= obj.type
+                   td= obj.launchPlace
+                   td= obj.landPlace
+                   td= obj.flightTime
+                   td= obj.number
+                   td= obj.price
+                   td= obj.status
+                   td= obj.name
+                   td
+                     a(href='#') 查看详情
+      .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
     .row
       .am-u-sm-12.am-margin-bottom.am-text-right
         a.am-btn.am-btn-xs.am-btn-success.am-margin-right(href='#') 上一页
