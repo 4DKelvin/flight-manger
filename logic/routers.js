@@ -99,8 +99,7 @@ router.get('/refreshOrder', async (req, res, next) => {
 router.get('/pay', async (req, res, next) => {
     if (!isNaN(req.query.orderId) && req.query.orderAgent) {
         try {
-            let payRes = await Api.pay(req.query.orderId, req.query.orderAgent);
-            Utils.renderJson(res, payRes);
+            Utils.renderJson(res, await Api.pay(req.query.orderId, req.query.orderAgent));
         } catch (e) {
             Utils.renderJsonError(res, "支付失敗，原因：" + e);
         }
