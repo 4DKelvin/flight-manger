@@ -103,8 +103,7 @@ router.post('/refund', async (req, res, next) => {
                 "orderNo": req.query.order,
                 "passengerIds": result[0].id,
                 "refundCause": refundInfo.msg,
-                "refundCauseId": refundInfo.code,
-                "callbackUrl": "http://139.198.19.42:3000/api/callback"
+                "refundCauseId": refundInfo.code
             }));
         }
     } else {
@@ -143,8 +142,7 @@ router.post('/change', async (req, res, next) => {
                 cabinCode: changeInfo.cabinCode,
                 startDate: req.query.date,
                 startTime: changeInfo.startTime,
-                endTime: changeInfo.endTime,
-                callbackUrl: 'http://139.198.19.42:3000/api/callback'
+                endTime: changeInfo.endTime
             });
             Utils.renderJson(res, {
                 "orderNo": changeRes[0].changeApplyResult.orderNo,
