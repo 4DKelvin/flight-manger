@@ -87,6 +87,7 @@ router.get('/refreshOrder', async (req, res, next) => {
                 orderNo: order.detail.orderNo,
                 orderStatus: order.detail.status,
                 notice: order.other.tgqMsg,
+                passengerTicketNo: orderInfo.passengers[0].ticketNo
             }));
         } else {
             Utils.renderJsonError(res, "無結果");
