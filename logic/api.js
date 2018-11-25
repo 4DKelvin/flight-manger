@@ -81,7 +81,7 @@ router.get('/order', async (req, res, next) => {
                     orderNo: order.detail.orderNo,
                     orderStatus: order.detail.status,
                     notice: order.other.tgqMsg,
-                    passengerTicketNo: orderInfo.passengers[0].ticketNo
+                    passengerTicketNo: order.passengers[0].ticketNo
                 }));
             } else {
                 Utils.renderJsonError(res, "查詢失敗，無此訂單信息");
