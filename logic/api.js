@@ -9,30 +9,34 @@ router.get('/flights', async (req, res, next) => {
         let dep = req.query.dep.toUpperCase();
         let arr = req.query.arr.toUpperCase();
         let date = req.query.date;
-        let result = await Api.queryFlight(dep, arr, date);
-        if (result && result.flightInfos && result.flightInfos.length) {
-            Utils.renderJson(res, result.flightInfos.map((flight) => {
-                return {
-                    flightNum: flight.flightNum,
-                    flightTimes: flight.flightTimes,
-                    flightTypeFullName: flight.flightTypeFullName,
-                    flightDistance: flight.distance,
-                    flightCarrier: flight.carrier,
-                    flightBarePrice: flight.barePrice,
-                    flightDiscount: flight.discount,
-                    planeType: flight.planetype,
-                    arr: flight.arr,
-                    arrAirport: flight.arrAirport,
-                    arrTime: flight.arrTime,
-                    arrTerminal: flight.arrTerminal,
-                    dep: flight.dpt,
-                    depAirport: flight.dptAirport,
-                    depTime: flight.dptTime,
-                    depTerminal: flight.dptTerminal
-                };
-            }));
-        } else {
-            Utils.renderJsonError(res, "無結果");
+        try {
+            let result = await Api.queryFlight(dep, arr, date);
+            if (result && result.flightInfos && result.flightInfos.length) {
+                Utils.renderJson(res, result.flightInfos.map((flight) => {
+                    return {
+                        flightNum: flight.flightNum,
+                        flightTimes: flight.flightTimes,
+                        flightTypeFullName: flight.flightTypeFullName,
+                        flightDistance: flight.distance,
+                        flightCarrier: flight.carrier,
+                        flightBarePrice: flight.barePrice,
+                        flightDiscount: flight.discount,
+                        planeType: flight.planetype,
+                        arr: flight.arr,
+                        arrAirport: flight.arrAirport,
+                        arrTime: flight.arrTime,
+                        arrTerminal: flight.arrTerminal,
+                        dep: flight.dpt,
+                        depAirport: flight.dptAirport,
+                        depTime: flight.dptTime,
+                        depTerminal: flight.dptTerminal
+                    };
+                }));
+            } else {
+                Utils.renderJsonError(res, "查詢失敗，航班信息");
+            }
+        } catch (e) {
+            Utils.renderJsonError(res, "查詢失敗，原因：" + e);
         }
     } else {
         Utils.renderJsonError(res, "參數錯誤");
@@ -45,18 +49,22 @@ router.get('/prices', async (req, res, next) => {
         let arr = req.query.arr.toUpperCase();
         let flightNo = req.query.flightNo.toUpperCase();
         let date = req.query.date;
-        let result = await Api.queryPrice(dep, arr, date, flightNo);
-        if (result && result.vendors && result.vendors.length) {
-            Utils.renderJson(res, result.vendors.map((vendor) => {
-                return {
-                    price: vendor.price,
-                    client: vendor.domain,
-                    cabin: vendor.cabin,
-                    encrypted_info: Utils.encodeBase64(JSON.stringify(vendor))
-                };
-            }));
-        } else {
-            Utils.renderJsonError(res, "無結果");
+        try {
+            let result = await Api.queryPrice(dep, arr, date, flightNo);
+            if (result && result.vendors && result.vendors.length) {
+                Utils.renderJson(res, result.vendors.map((vendor) => {
+                    return {
+                        price: vendor.price,
+                        client: vendor.domain,
+                        cabin: vendor.cabin,
+                        encrypted_info: Utils.encodeBase64(JSON.stringify(vendor))
+                    };
+                }));
+            } else {
+                Utils.renderJsonError(res, "無價格信息結果");
+            }
+        } catch (e) {
+            Utils.renderJsonError(res, "查詢失敗，原因：" + e);
         }
     } else {
         Utils.renderJsonError(res, "參數錯誤");
@@ -66,15 +74,19 @@ router.get('/prices', async (req, res, next) => {
 
 router.get('/order', async (req, res, next) => {
     if (req.query.orderNo) {
-        let order = await Api.orderDetail(req.query.orderNo);
-        if (order) {
-            Utils.renderJson(res, await Order.insertOrUpdate({
-                orderNo: order.detail.orderNo,
-                orderStatus: order.detail.status,
-                notice: order.other.tgqMsg,
-            }));
-        } else {
-            Utils.renderJsonError(res, "無結果");
+        try {
+            let order = await Api.orderDetail(req.query.orderNo);
+            if (order) {
+                Utils.renderJson(res, await Order.insertOrUpdate({
+                    orderNo: order.detail.orderNo,
+                    orderStatus: order.detail.status,
+                    notice: order.other.tgqMsg,
+                }));
+            } else {
+                Utils.renderJsonError(res, "查詢失敗，無此訂單信息");
+            }
+        } catch (e) {
+            Utils.renderJsonError(res, "查詢失敗，原因：" + e);
         }
     } else {
         Utils.renderJsonError(res, "參數錯誤");
@@ -92,19 +104,24 @@ router.get('/refund', async (req, res, next) => {
 
 router.post('/refund', async (req, res, next) => {
     if (req.query.order && req.body.code) {
-        let result = await Api.refundReasons(req.query.order);
-        if (!result[0].refundSearchResult) {
-            Utils.renderJsonError(res, "此訂單已經申請退款");
-        } else {
-            let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
-                if (Number(e.code) === Number(req.body.code)) return e;
-            });
-            Utils.renderJson(res, await Api.refund({
-                "orderNo": req.query.order,
-                "passengerIds": result[0].id,
-                "refundCause": refundInfo.msg,
-                "refundCauseId": refundInfo.code
-            }));
+        try {
+
+            let result = await Api.refundReasons(req.query.order);
+            if (!result[0].refundSearchResult) {
+                Utils.renderJsonError(res, "此訂單已經申請退款");
+            } else {
+                let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
+                    if (Number(e.code) === Number(req.body.code)) return e;
+                });
+                Utils.renderJson(res, await Api.refund({
+                    "orderNo": req.query.order,
+                    "passengerIds": result[0].id,
+                    "refundCause": refundInfo.msg,
+                    "refundCauseId": refundInfo.code
+                }));
+            }
+        } catch (e) {
+            Utils.renderJsonError(res, "退票操作失敗，原因：" + e);
         }
     } else {
         Utils.renderJsonError(res, "參數錯誤");
@@ -206,7 +223,7 @@ router.post('/booking', async (req, res, next) => {
                     notice: orderInfo.other.tgqMsg,
                 }));
             } else {
-                Utils.renderJsonError(res, "預約失敗,無預約信息");
+                Utils.renderJsonError(res, "預約失敗，票價已更新，無發預約");
             }
         } catch (e) {
             Utils.renderJsonError(res, "預約失敗,原因：" + e);
