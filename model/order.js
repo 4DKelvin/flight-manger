@@ -38,7 +38,7 @@ module.exports = {
     },
     findByCon: function (condition) {
         return new Promise(function (resolve, reject) {
-            plane_orders.find(condition, function (err, data) {
+            plane_orders.findOne(condition).lean().exec(function (err, data) {
                 if (err) reject(err);
                 else resolve(data);
             })
@@ -52,7 +52,7 @@ module.exports = {
             })
         })
     },
-    search: function (startDate, endDate, orderNo, ticketNo, passengerName, page = 1) {
+    search: function (startDate, endDate, orderNo, ticketNo, passengerName, page = 0) {
         let query = plane_orders.find({});
 
         if (startDate || endDate) {
@@ -79,11 +79,12 @@ module.exports = {
         }
         if (passengerName) {
             query.where({
-                customers: {
+                /*customers: {
                     $elemMatch: {
-                        name: new RegExp('^' + passengerName + '$', "i")
+                        passengerName: new RegExp('^' + passengerName + '$', "i")
                     }
-                }
+                }*/
+                passengerName : new RegExp('^'+ passengerName + "$" ,'i')
             });
         }
         return new Promise((resolve, reject) => {

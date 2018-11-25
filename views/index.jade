@@ -80,7 +80,7 @@ block content
                 th 类型
                 th 起飞
                 th 到达
-                th 航班日期
+                th 起飞日期
                 th 人数
                 th 订单报价
                 th 订单状态
@@ -90,17 +90,17 @@ block content
                 tr
                    td
                       input(value=obj.orderNo readonly='readonly' style="width: 100%; height: 100%" name="orderNo")
-                   td= obj.orderTime
-                   td= obj.type
-                   td= obj.launchPlace
-                   td= obj.landPlace
-                   td= obj.flightTime
-                   td= obj.number
-                   td= obj.price
-                   td= obj.status
-                   td= obj.name
+                   td= obj.flightDate
+                   td= obj.passengerType
+                   td= obj.flightDeparture
+                   td= obj.flightArrival
+                   td= obj.flightDepartureDateTime
+                   td= 1
+                   td= obj.orderTotalPrice
+                   td= obj.orderStatus
+                   td= obj.passengerName
                    td
-                     a(href='#') 查看详情
+                     a(href='/detail?orderNo='+obj.orderNo) 查看详情
       .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
     .row
       .am-u-sm-12.am-margin-bottom.am-text-right
