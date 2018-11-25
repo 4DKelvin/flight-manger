@@ -93,9 +93,9 @@ router.get('/refund', async (req, res, next) => {
 router.post('/refund', async (req, res, next) => {
     if (req.query.order && req.body.code) {
         let result = await Api.refundReasons(req.query.order);
-        if(!result[0].refundSearchResult){
+        if (!result[0].refundSearchResult) {
             Utils.renderJsonError(res, "此訂單已經申請退款");
-        }else{
+        } else {
             let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
                 if (Number(e.code) === Number(req.body.code)) return e;
             });
@@ -123,9 +123,9 @@ router.get('/change', async (req, res, next) => {
 router.post('/change', async (req, res, next) => {
     if (req.query.order && req.query.date && req.body.unique) {
         let result = await Api.changeReasons(req.query.order, req.query.date);
-        if(!result[0].changeSearchResult){
+        if (!result[0].changeSearchResult) {
             Utils.renderJsonError(res, "此訂單已經申請改簽");
-        }else{
+        } else {
             let reason = result[0].changeSearchResult.tgqReasons[0];
             let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === req.body.unique) return e;
@@ -172,40 +172,44 @@ router.post('/booking', async (req, res, next) => {
         let birthday = req.body.birthday;
         let sex = req.body.sex;
 
-        let booking = await Api.booking(dep, arr, date, time, flightNo, price);
-        if (booking) {
-            let order = await Api.order(name, identify, birthday, sex, booking);
-            let orderInfo = await Api.orderDetail(order.orderNo);
-            let arrTime = orderInfo.flightInfo[0].deptTime;
-            Utils.renderJson(res, await Order.insertOrUpdate({
-                orderId: order.id,
-                orderNo: orderInfo.detail.orderNo,
-                orderStatus: orderInfo.detail.status,
-                orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-                orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-                orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
-                orderRealPrice: orderInfo.passengerTypes[0].realPrice,
-                orderAgent: booking.extInfo.clientId,
-                passengerName: orderInfo.passengers[0].name,
-                passengerType: orderInfo.passengers[0].type,
-                passengerIdentifyType: orderInfo.passengers[0].cardType,
-                passengerIdentify: orderInfo.passengers[0].cardNum,
-                passengerTicketNo: orderInfo.passengers[0].ticketNo,
-                passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
-                flightNo: orderInfo.flightInfo[0].flightNum,
-                flightDate: Date.parse(date),
-                flightDeparture: orderInfo.flightInfo[0].dptCity,
-                flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
-                flightDepartureTime: Date.parse(date + ' ' + time),
-                flightArrival: orderInfo.flightInfo[0].arrCity,
-                flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
-                flightArrivalTime: Date.parse(date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
-                flightCabin: orderInfo.flightInfo[0].cabin,
-                notice: orderInfo.other.tgqMsg,
-            }));
-        } else {
-            Utils.renderJsonError(res, "預約失敗");
+        try {
+            let booking = await Api.booking(dep, arr, date, time, flightNo, price);
+            if (booking) {
+                let order = await Api.order(name, identify, birthday, sex, booking);
+                let orderInfo = await Api.orderDetail(order.orderNo);
+                let arrTime = orderInfo.flightInfo[0].deptTime;
+                Utils.renderJson(res, await Order.insertOrUpdate({
+                    orderId: order.id,
+                    orderNo: orderInfo.detail.orderNo,
+                    orderStatus: orderInfo.detail.status,
+                    orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
+                    orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+                    orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
+                    orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                    orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+                    orderAgent: booking.extInfo.clientId,
+                    passengerName: orderInfo.passengers[0].name,
+                    passengerType: orderInfo.passengers[0].type,
+                    passengerIdentifyType: orderInfo.passengers[0].cardType,
+                    passengerIdentify: orderInfo.passengers[0].cardNum,
+                    passengerTicketNo: orderInfo.passengers[0].ticketNo,
+                    passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
+                    flightNo: orderInfo.flightInfo[0].flightNum,
+                    flightDate: Date.parse(date),
+                    flightDeparture: orderInfo.flightInfo[0].dptCity,
+                    flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
+                    flightDepartureTime: Date.parse(date + ' ' + time),
+                    flightArrival: orderInfo.flightInfo[0].arrCity,
+                    flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
+                    flightArrivalTime: Date.parse(date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+                    flightCabin: orderInfo.flightInfo[0].cabin,
+                    notice: orderInfo.other.tgqMsg,
+                }));
+            } else {
+                Utils.renderJsonError(res, "預約失敗,無預約信息");
+            }
+        } catch (e) {
+            Utils.renderJsonError(res, "預約失敗,原因：" + e);
         }
     } else {
         Utils.renderJsonError(res, "參數錯誤");
