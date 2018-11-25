@@ -1,110 +1,74 @@
 extends layout
 
 block content
-  form.am-g(action='/',method='get')
-    .am-u-sm-12.am-u-md-3
-        | 订单日期
-        input.am-form-field.datetime-picker(type='text', name='start', placeholder='起始日期时间')
-      .am-u-sm-12.am-u-md-3
-        | 至
-        input.am-form-field.datetime-picker(type='text', name='end', placeholder='结束日期时间')
-      .am-u-sm-12.am-u-md-4
-        | 乘机人姓名：
-        input.am-form-field(type='text', name='name', placeholder='乘机人姓名')
-        <br/>
-      .am-u-sm-12.am-u-md-4
-        | 订单号：
-        input.am-form-field(type='text', name='orderId', placeholder='订单号')
-      .am-u-sm-12.am-u-md-4
-        | 票号：
-        input.am-form-field(type='text', name='tickerNo', placeholder='票号')
-      .am-u-sm-12.am-u-md-2
-        .am-input-group.am-input-group
-          span.am-input-group-btn
-            button.am-btn.am-btn-default(type='submit') 搜索
-  hr
-  #modal.am-modal.am-modal-no-btn(tabindex='-1')
-    .am-modal-dialog
-      .am-modal-hd
-        | 快速下单
-        a.am-close.am-close-spin(href='javascript: void(0)', data-am-modal-close='') ×
-      .am-modal-bd
-        .am-form.am-text-left
-          hr.am-margin-bottom-xs
-          .row.commons
-            .am-u-sm-12
-              stong.am-text-xs.am-padding-right 用户状态:
-              span.am-text-xs#user_status
-              .am-btn.am-fr.am-btn-xs.am-btn-warning.am-btn-refresh 刷新
-          .row
-            .am-u-sm-12
-              stong.am-text-xs.am-padding-right 订单状态:
-              span.am-text-xs#order_status 未下单
-          .row
-            .am-u-sm-12
-              stong.am-text-xs.am-padding-right 手机号码:
-              span.am-text-xs#order_phone
-          .row
-            .am-u-sm-12.am-margin-bottom-xs
-              stong.am-text-xs.am-padding-right 登录密码:
-              span.am-text-xs#order_password
-          hr
-          .row#items
-            .item.am-u-sm-12.am-text-nowrap
-              span.am-text-xs 券&nbsp;:&nbsp;
-              span.am-text-xs.name
-              span &nbsp;-&nbsp;
-              span.am-text-xs.amt
-          hr.am-margin-top-xs
-          .row
-            .am-u-sm-12
-              .am-form-group
-                label.am-text-xs
-                  span.am-padding-right-sm 下单价格
-                  small 原价:
-                  small#source_price
-
-                input#price.am-input-sm(type='text',name='price')
-          .row
-            .am-u-sm-12.am-margin-bottom
-              .am-btn.am-btn-sm.am-btn-block.am-btn-success.am-btn-submit 提交
-
-  .am-g
-    .am-u-sm-12
-    #orderlist
-          table(width='100%', height='100%', border='1', cellspacing='0', cellpadding='0')
-            tbody
-              tr
-                th 订单号
-                th 订单日期
-                th 类型
-                th 起飞
-                th 到达
-                th 起飞日期
-                th 人数
-                th 订单报价
-                th 订单状态
-                th 锁定人
-                th 操作
-              - each obj in orders
-                tr
-                   td
-                      input(value=obj.orderNo readonly='readonly' style="width: 100%; height: 100%" name="orderNo")
-                   td= obj.flightDate
-                   td= obj.passengerType
-                   td= obj.flightDeparture
-                   td= obj.flightArrival
-                   td= obj.flightDepartureDateTime
-                   td= 1
-                   td= obj.orderTotalPrice
-                   td= obj.orderStatus
-                   td= obj.passengerName
-                   td
-                     a(href='/detail?orderNo='+obj.orderNo) 查看详情
-      .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
-    .row
-      .am-u-sm-12.am-margin-bottom.am-text-right
-        a.am-btn.am-btn-xs.am-btn-success.am-margin-right(href='#') 上一页
-        span.am-btn.am-btn-xs.am-btn-default.am-margin-right 第 1 页
-        a.am-btn.am-btn-xs.am-btn-success(href='#') 下一页
+    .am-g
+        form.am-form(action='/',method='get')
+            .am-cf.am-margin-top-xs
+                .am-u-sm-12.am-u-md-4
+                    label 订单日期:
+                    input.am-form-field.datetime-picker(type='text', name='start', placeholder='起始日期时间')
+                .am-u-sm-12.am-u-md-4
+                    label 至:
+                    input.am-form-field.datetime-picker(type='text', name='end', placeholder='结束日期时间')
+                .am-u-sm-12.am-u-md-4
+                    label 乘机人姓名:
+                    input.am-form-field(type='text', name='name', placeholder='乘机人姓名')
+            .am-cf.am-margin-top-xs
+                .am-u-sm-12.am-u-md-4
+                    label 订单号:
+                    input.am-form-field(type='text', name='orderId', placeholder='订单号')
+                .am-u-sm-12.am-u-md-4
+                    label 票号:
+                    input.am-form-field(type='text', name='tickerNo', placeholder='票号')
+                .am-u-sm-12.am-u-md-4
+                    label &nbsp;
+                    br
+                    button.am-btn.am-btn-default(type='submit') 搜索
+    hr
+    .am-g
+        #orderlist.am-u-sm-12
+            table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-center
+                tbody
+                    tr
+                        th.am-text-center 订单状态
+                        th.am-text-center 订单日期
+                        th.am-text-center 乘客
+                        th.am-text-center(width=50) 起飞
+                        th.am-text-center(width=50) 到达
+                        th.am-text-center 起飞日期
+                        th.am-text-center 订单报价
+                        th.am-text-center 锁定人
+                        th.am-text-center 操作
+                    each obj in orders
+                        tr
+                            td
+                                span #{obj.orderNo}
+                                br
+                                span #{obj.orderStatus}
+                            td
+                                span #{obj.date}
+                            td
+                                span #{obj.passengerName}
+                                br
+                                span #{obj.passengerType}
+                            td
+                                span #{obj.flightDeparture}
+                            td
+                                span #{obj.flightArrival}
+                            td
+                                span #{obj.flightDepartureDateTime}
+                                br
+                                span #{obj.flightArrivalDateTime}
+                            td
+                                span #{obj.total}
+                            td
+                                span N/A
+                            td
+                                a.am-btn.am-btn-primary.am-btn-sm(href='/detail?orderNo=' + obj.orderNo) 查看详情
+        .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
+        .row
+            .am-u-sm-12.am-margin-bottom.am-text-right
+                a.am-btn.am-btn-xs.am-btn-success.am-margin-right(href='#') 上一页
+                span.am-btn.am-btn-xs.am-btn-default.am-margin-right 第 1 页
+                a.am-btn.am-btn-xs.am-btn-success(href='#') 下一页
 
