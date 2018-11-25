@@ -51,6 +51,7 @@ router.get('/prices', async (req, res, next) => {
                 return {
                     price: vendor.price,
                     client: vendor.domain,
+                    cabin: vendor.cabin,
                     encrypted_info: Utils.encodeBase64(JSON.stringify(vendor))
                 };
             }));
@@ -61,7 +62,6 @@ router.get('/prices', async (req, res, next) => {
         Utils.renderJsonError(res, "參數錯誤");
     }
 });
-
 
 
 router.get('/order', async (req, res, next) => {
@@ -76,6 +76,69 @@ router.get('/order', async (req, res, next) => {
         } else {
             Utils.renderJsonError(res, "無結果");
         }
+    } else {
+        Utils.renderJsonError(res, "參數錯誤");
+    }
+});
+
+router.get('/refund', async (req, res, next) => {
+    if (req.query.order) {
+        let result = await Api.refundReasons(req.query.order);
+        Utils.renderJson(res, result[0].refundSearchResult.tgqReasons);
+    } else {
+        Utils.renderJsonError(res, "參數錯誤");
+    }
+});
+
+router.post('/refund', async (req, res, next) => {
+    if (req.query.order && req.body.code) {
+        let result = await Api.refundReasons(req.query.order);
+        let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
+            if (Number(e.code) === Number(req.body.code)) return e;
+        });
+        Utils.renderJson(res, await Api.refund({
+            "orderNo": req.query.order,
+            "passengerIds": result[0].id,
+            "refundCause": refundInfo.msg,
+            "refundCauseId": refundInfo.code,
+            "callbackUrl": "http://139.198.19.42:3000/api/callback"
+        }));
+    } else {
+        Utils.renderJsonError(res, "參數錯誤");
+    }
+});
+
+router.get('/change', async (req, res, next) => {
+    if (req.query.order && req.query.date) {
+        let result = await Api.changeReasons(req.query.order, req.query.date);
+        Utils.renderJson(res, result[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList);
+    } else {
+        Utils.renderJsonError(res, "參數錯誤");
+    }
+});
+
+router.post('/change', async (req, res, next) => {
+    if (req.query.order && req.query.date && req.body.unique) {
+        let result = await Api.changeReasons(req.query.order, req.query.date);
+        let list = result[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList;
+        let changeInfo = list.find(function (e) {
+            if (e.uniqKey === req.body.unique) return e;
+        });
+        Utils.renderJson(res, await Api.change({
+            orderNo: req.query.order,
+            changeCauseId: result[0].tgqReasons[0].code,
+            passengerIds: result[0].id,
+            applyRemarks: result[0].tgqReasons[0].msg,
+            uniqKey: req.body.unique,
+            gqFee: changeInfo.gqFee,
+            upgradeFee: changeInfo.upgradeFee,
+            flightNo: changeInfo.flightNo,
+            cabinCode: changeInfo.cabinCode,
+            startDate: changeInfo.startDate,
+            startTime: changeInfo.startTime,
+            endTime: changeInfo.endTime,
+            callbackUrl: 'http://139.198.19.42:3000/api/callback'
+        }));
     } else {
         Utils.renderJsonError(res, "參數錯誤");
     }
