@@ -7,22 +7,24 @@ block content
             var orderId = $("#orderId").val();
             var orderNo = $("#orderNo").val();
             var orderAgent = $("#orderAgent").val();
-            $.get('/' + temp + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId, function (res) {
-                if (res.code == 200) {
-                    console.log(res.code);
-                    if (res.code == '200') {
-                        if (temp == 'pay') {
-                            alert("下单成功！");
-                        } else {
-                            alert("刷新订单成功！");
-                        }
+            if (temp == "refreshOrder" || confirm("確定此操作嗎？")) {
+                $.get('/' + temp + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId, function (res) {
+                    if (res.code == 200) {
+                        console.log(res.code);
+                        if (res.code == '200') {
+                            if (temp == 'pay') {
+                                alert("下单成功！");
+                            } else {
+                                alert("刷新订单成功！");
+                            }
 
-                        location.reload();
+                            location.reload();
+                        }
+                    } else {
+                        alert(res.msg)
                     }
-                } else {
-                    alert(res.msg)
-                }
-            })
+                })
+            }
         }
     .am-g
         form.am-form.am-margin-left-sm(action='/takeOrder',method='get')
