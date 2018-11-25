@@ -97,9 +97,19 @@ router.get('/refreshOrder', async (req, res, next) => {
 });
 
 router.get('/pay', async (req, res, next) => {
-    if (!isNaN(req.query.orderId) && req.query.orderAgent) {
+    if (!isNaN(req.query.orderId) && req.query.orderAgent && req.query.orderNo) {
         try {
-            Utils.renderJson(res, await Api.pay(req.query.orderId, req.query.orderAgent));
+            await Api.pay(req.query.orderId, req.query.orderAgent);
+            let order = await Api.orderDetail(req.query.orderNo);
+            if (order) {
+                Utils.renderJson(res, await Order.insertOrUpdate({
+                    orderNo: order.detail.orderNo,
+                    orderStatus: order.detail.status,
+                    notice: order.other.tgqMsg,
+                }));
+            } else {
+                Utils.renderJsonError(res, "支付成功，更新訂單失敗");
+            }
         } catch (e) {
             Utils.renderJsonError(res, "支付失敗，原因：" + e);
         }
