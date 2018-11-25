@@ -98,16 +98,11 @@ router.get('/refreshOrder', async (req, res, next) => {
 
 router.get('/pay', async (req, res, next) => {
     if (!isNaN(req.query.orderId) && req.query.orderAgent) {
-        //真實支付接口測試慎重
-        console.log(req.query.orderAgent + req.query.orderId)
         try {
             let payRes = await Api.pay(req.query.orderId, req.query.orderAgent);
-            let ticket = res.results[0];
-            console.log(ticket); //支付成功，取得收據
             Utils.renderJson(res, payRes);
         } catch (e) {
-            console.log(e); //支付失敗，e=>原因
-            Utils.renderJsonError(res, "無結果");
+            Utils.renderJsonError(res, "支付失敗，原因：" + e);
         }
     } else {
         Utils.renderJsonError(res, "參數錯誤");
