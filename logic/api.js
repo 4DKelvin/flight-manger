@@ -141,7 +141,7 @@ router.get('/prices', async (req, res, next) => {
 router.get('/order', async (req, res, next) => {
     if (req.query.id) {
         let orders = await new Promise((resolve, reject) => {
-            Order.query().where({groupId: groupId}).lean().exec((err, orders) => {
+            Order.query().where({groupId: req.query.id}).lean().exec((err, orders) => {
                 if (err) reject(err);
                 else resolve(orders);
             })
@@ -158,7 +158,7 @@ router.get('/order', async (req, res, next) => {
                     });
                 }
             }
-            Utils.renderJson(res, groupDetail(req.query.id));
+            Utils.renderJson(res, await groupDetail(req.query.id));
         } catch (e) {
             Utils.renderJsonError(res, "查詢失敗，原因：" + e);
         }
@@ -352,7 +352,7 @@ async function groupDetail(groupId) {
         delete order.groupId;
         delete order.orderId;
         delete order.orderNo;
-        order.id = groupId + '-' + order._id;
+        order.id = groupId + order._id.toString().toUpperCase();
         delete order._id;
         res.flights[Utils.formatDate(order.flightDate)] = order;
     });
