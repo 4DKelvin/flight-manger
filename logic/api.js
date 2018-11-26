@@ -140,7 +140,12 @@ router.get('/prices', async (req, res, next) => {
 
 router.get('/order', async (req, res, next) => {
     if (req.query.id) {
-        let orders = await Order.findByCon({groupId: req.query.id});
+        let orders = await new Promise((resolve, reject) => {
+            Order.query().where({groupId: groupId}).lean().exec((err, orders) => {
+                if (err) reject(err);
+                else resolve(orders);
+            })
+        });
         try {
             for (let key in orders) {
                 let order = await Api.orderDetail(orders[key].orderNo);
