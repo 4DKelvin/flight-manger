@@ -29,7 +29,8 @@ module.exports = {
         flightCabin: String,
         notice: String,
         operator: String,
-        lock: Boolean
+        lock: Boolean,
+        groupId: String
     }),
     plane_customer: mongoose.model('plane_customer', {
         name: String,

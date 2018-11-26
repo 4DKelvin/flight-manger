@@ -1,36 +1,12 @@
 extends layout
 
-
 block content
-    script(type='text/javascript').
-        function commit(temp) {
-            var orderId = $("#orderId").val();
-            var orderNo = $("#orderNo").val();
-            var orderAgent = $("#orderAgent").val();
-            if (temp == "refreshOrder" || confirm("確定此操作嗎？")) {
-                $.get('/' + temp + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId, function (res) {
-                    if (res.code == 200) {
-                        console.log(res.code);
-                        if (res.code == '200') {
-                            if (temp == 'pay') {
-                                alert("下单成功！");
-                            } else {
-                                alert("刷新订单成功！");
-                            }
 
-                            location.reload();
-                        }
-                    } else {
-                        alert(res.msg)
-                    }
-                })
-            }
-        }
     .am-g
         form.am-form.am-margin-left-sm(action='/takeOrder',method='get')
             fieldset
-                legend.am-text-sm 訂單編號：#{order.orderNo} / 下單日期：#{order.date}
-                table#orderlist.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
+                legend.am-text-sm 訂單編號：#{orders[0].groupId} / 下單日期：#{orders[0].date}
+                table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tbody
                         tr
                             th 行程类型
@@ -39,11 +15,11 @@ block content
                             th 起降机场
                             th 起降时间
                         tr
-                            td 往返
-                            td #{order.flightNo}
-                            td #{order.flightCabin}
-                            td #{order.flightDeparture} -- #{order.flightArrival}
-                            td #{startTime} -- #{endTime}
+                            td 去程
+                            td #{orders[0].flightNo}
+                            td #{orders[0].flightCabin}
+                            td #{orders[0].flightDeparture} -- #{orders[0].flightArrival}
+                            td #{orders[0].flightDepartureTime} -- #{orders[0].flightArrivalTime}
                         tr
                             th  乘客类型
                             th  人数
@@ -51,11 +27,38 @@ block content
                             th  机料/燃油
                             th  机票总价
                         tr
-                            td  #{order.passengerType}
+                            td  #{orders[0].passengerType}
                             td  1
-                            td  #{order.price}
-                            td  #{sum}
-                            td  #{order.total}
+                            td  #{orders[0].price}
+                            td  #{orders[0].orderFuelTax + orders[0].orderConstructionFee}
+                            td  #{orders[0].total}
+                hr
+                table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
+                    tbody
+                        tr
+                            th 行程类型
+                            th 航班号
+                            th 航位
+                            th 起降机场
+                            th 起降时间
+                        tr
+                            td 返程
+                            td #{orders[1].flightNo}
+                            td #{orders[1].flightCabin}
+                            td #{orders[1].flightDeparture} -- #{orders[1].flightArrival}
+                            td #{orders[1].flightDepartureTime} -- #{orders[1].flightArrivalTime}
+                        tr
+                            th  乘客类型
+                            th  人数
+                            th  票面价
+                            th  机料/燃油
+                            th  机票总价
+                        tr
+                            td  #{orders[1].passengerType}
+                            td  1
+                            td  #{orders[1].price}
+                            td  #{orders[1].orderFuelTax + orders[1].orderConstructionFee}
+                            td  #{orders[1].total}
             fieldset
                 legend.am-text-sm 乘機人信息
                 table#order.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
@@ -66,59 +69,79 @@ block content
                         th   性别
                         th   证件类型
                         th   证件号
-                        th   证件有效期
-                        th   票号
+                        th   去程票号
+                        th   返程票号
                     tr
                         td   1
-                        td   #{order.passengerType}
-                        td   #{order.passengerName}
+                        td   #{orders[0].passengerType}
+                        td   #{orders[0].passengerName}
                         td   N/A
-                        td   #{order.passengerIdentifyType}
-                        td   #{order.passengerIdentify}
-                        td   长期有效
-                        td   #{order.passengerTicketNo}
+                        td   #{orders[0].passengerIdentifyType}
+                        td   #{orders[0].passengerIdentify}
+                        td.ticket(order-no=orders[0].orderNo)
+                            span #{orders[0].passengerTicketNo}
+                        td.ticket(order-no=orders[1].orderNo)
+                            span #{orders[1].passengerTicketNo}
             fieldset
                 legend.am-text-sm 出票工具
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tr
+                        th  類型
                         th  出票渠道
                         th  外部订单
                         th  订单状态
-                        th  乘客姓名
                         th  支付总价
                         th  操作
-                    tr
-                        td #{order.orderAgent}
-                            input(id='orderAgent' value='#{order.orderAgent}' type='hidden')
-                            input(id='orderId' value='#{order.orderId}' type='hidden')
-                        td #{order.orderNo}
-                            input(id='orderNo' value='#{order.orderNo}' type='hidden')
-                        td #{order.orderStatus}
-                        td #{order.passengerName}
-                        td #{order.total}
-                        td
-                            input.am-btn-sm.am-btn.am-btn-default(type='button', value='刷新' onClick='commit("refreshOrder")')
-                            input.am-btn-sm.am-btn.am-btn-success(name='pay', value='支付', type='button' onClick='commit("pay")')
-                            input.am-btn-sm.am-btn.am-btn-danger(name='refund', value='退票', type='button' onClick='commit("refund")')
-                            input.am-btn-sm.am-btn.am-btn-primary(name='change', value='改簽', type='button' onClick='')
+                    each order,index in orders
+                        tr(order-no=order.orderNo,order-id=order.orderId,order-agent=order.orderAgent)
+                            td #{index == 0 ? "去程" : "返程"}
+                            td #{order.orderAgent}
+                            td #{order.orderNo})
+                            td #{order.orderStatus}
+                            td #{order.total}
+                            td
+                                input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="refresh" value='刷新')
+                                input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付')
+                                input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票')
+                                input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='change', value='改簽')
             fieldset
                 legend.am-text-sm 該簽退規則
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tr
                         td.am-text-nowrap(width=80) 成人票
-                        td.am-text-nowrap(width=80) 往返
-                        td !{order.notice}
+                        td.am-text-nowrap(width=80) 去程
+                        td !{orders[0].notice}
                     tr
-                        td.am-text-nowrap 儿童票
-                        td.am-text-nowrap 往返
-                        td
-                            p 同舱更改条件：以航空公司规则为准
-                            p 退票条件：以航空公司规则为准
-                            p 签转条件：以航空公司规则为准
+                        td.am-text-nowrap 成人票
+                        td.am-text-nowrap 返程
+                        td !{orders[1].notice}
 
 
     .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
 
 
 
-
+block script
+    script(type='text/javascript').
+        $(document).on('click', '.action', function (e) {
+            e.preventDefault();
+            var parent = $(this).parents('tr');
+            var orderNo = parent.attr('order-no');
+            var orderId = parent.attr('order-id');
+            var orderAgent = parent.attr('order-agent');
+            var action = $(this).attr('name');
+            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId, function (res) {
+                if (res.code == 200) {
+                    if (res.code == '200') {
+                        if (action == 'pay') {
+                            parent.find('td').eq(3).html("支付成功等待出票");
+                        } else {
+                            parent.find('td').eq(3).html(res.data.orderStatus);
+                            $(".ticket[order-no='" + orderNo + "']").html(res.data.passengerTicketNo);
+                        }
+                    }
+                } else {
+                    alert(res.msg)
+                }
+            })
+        });

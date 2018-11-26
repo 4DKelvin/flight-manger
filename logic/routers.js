@@ -29,31 +29,39 @@ router.get('/', async (req, res, next) => {
 });
 
 router.get('/detail', async (req, res, next) => {
-    var condition = {orderNo: req.query.orderNo}
-    var order = await Order.findByCon(condition);
-    var startTime = Utils.formatDateTime(order.flightDepartureTime);
-    var endTime = Utils.formatDateTime(order.flightArrivalTime);
-    if (order.flightDate) {
-        order.date = Utils.formatDate(order.flightDate);
-    }
-    if (order.flightArrivalTime) {
-        order.flightArrivalDateTime = Utils.formatDateTime(order.flightArrivalTime);
-    }
-    if (order.flightDepartureTime) {
-        order.flightDepartureDateTime = Utils.formatDateTime(order.flightDepartureTime);
-    }
-    if (order.orderTotalPrice) {
-        order.total = '¥ ' + Number(order.orderTotalPrice).toFixed(2);
-    }
-    if (order.orderOriginPrice) {
-        order.price = '¥ ' + Number(order.orderOriginPrice).toFixed(2);
-    }
+    let orders = await new Promise((resolve, reject) => {
+        Order.query().where({groupId: req.query.orderNo}).lean().exec((err, orders) => {
+            if (err) reject(err);
+            else resolve(orders);
+        })
+    });
+
     res.render('detail', {
         title: '訂單詳情',
-        sum: '¥ ' + Number(order.orderFuelTax + order.orderConstructionFee).toFixed(2),
-        order: order,
-        startTime: startTime,
-        endTime: endTime
+        orders: orders.map((order) => {
+            if (order.flightArrivalTime) {
+                order.flightArrivalTime = Utils.formatDateTime(order.flightArrivalTime);
+            }
+            if (order.flightDepartureTime) {
+                order.flightDepartureTime = Utils.formatDateTime(order.flightDepartureTime);
+            }
+            if (order.flightDate) {
+                order.date = Utils.formatDate(order.flightDate);
+            }
+            if (order.flightArrivalTime) {
+                order.flightArrivalDateTime = Utils.formatDateTime(order.flightArrivalTime);
+            }
+            if (order.flightDepartureTime) {
+                order.flightDepartureDateTime = Utils.formatDateTime(order.flightDepartureTime);
+            }
+            if (order.orderTotalPrice) {
+                order.total = '¥ ' + Number(order.orderTotalPrice).toFixed(2);
+            }
+            if (order.orderOriginPrice) {
+                order.price = '¥ ' + Number(order.orderOriginPrice).toFixed(2);
+            }
+            return order;
+        })
     });
 });
 
@@ -79,7 +87,7 @@ router.get('/refund', async (req, res, next) => {
     }
 });
 
-router.get('/refreshOrder', async (req, res, next) => {
+router.get('/refresh', async (req, res, next) => {
     if (req.query.orderNo) {
         let order = await Api.orderDetail(req.query.orderNo);
         if (order) {

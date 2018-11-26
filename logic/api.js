@@ -5,15 +5,21 @@ let Utils = require('../lib/utils');
 let Order = require('../model/order');
 
 router.get('/flights', async (req, res, next) => {
-    if (req.query.dep && req.query.arr && req.query.date) {
+    if (req.query.dep && req.query.arr && req.query.start && req.query.end) {
         let dep = req.query.dep.toUpperCase();
         let arr = req.query.arr.toUpperCase();
-        let date = req.query.date;
+        let start = req.query.start;
+        let end = req.query.end;
         try {
-            let result = await Api.queryFlight(dep, arr, date);
-            if (result && result.flightInfos && result.flightInfos.length) {
-                Utils.renderJson(res, result.flightInfos.map((flight) => {
-                    return {
+            let result = await Api.queryFlight(dep, arr, start);
+            let result2 = await Api.queryFlight(arr, dep, end);
+            if (result && result.flightInfos && result.flightInfos.length &&
+                result2 && result2.flightInfos && result2.flightInfos.length) {
+                let response = {};
+                response[req.query.start] = {};
+                response[req.query.end] = {};
+                result.flightInfos.forEach((flight) => {
+                    response[req.query.start][flight.dptTime] = {
                         flightNum: flight.flightNum,
                         flightTimes: flight.flightTimes,
                         flightTypeFullName: flight.flightTypeFullName,
@@ -29,11 +35,60 @@ router.get('/flights', async (req, res, next) => {
                         dep: flight.dpt,
                         depAirport: flight.dptAirport,
                         depTime: flight.dptTime,
-                        depTerminal: flight.dptTerminal
+                        depTerminal: flight.dptTerminal,
+                        priceTicket: Utils.encodeBase64(JSON.stringify({
+                            dep: flight.dpt,
+                            arr: flight.arr,
+                            date: req.query.start,
+                            time: flight.dptTime,
+                            num: flight.flightNum
+                        })),
+                        priceUrl: req.protocol + "://" + req.get('host') + "/api/prices?ticket=" + Utils.encodeBase64(JSON.stringify({
+                            dep: flight.dpt,
+                            arr: flight.arr,
+                            date: req.query.start,
+                            time: flight.dptTime,
+                            num: flight.flightNum
+                        }))
                     };
-                }));
+                });
+                result2.flightInfos.forEach((flight) => {
+                    response[req.query.end][flight.dptTime] = {
+                        flightNum: flight.flightNum,
+                        flightTimes: flight.flightTimes,
+                        flightTypeFullName: flight.flightTypeFullName,
+                        flightDistance: flight.distance,
+                        flightCarrier: flight.carrier,
+                        flightBarePrice: flight.barePrice,
+                        flightDiscount: flight.discount,
+                        planeType: flight.planetype,
+                        arr: flight.arr,
+                        arrAirport: flight.arrAirport,
+                        arrTime: flight.arrTime,
+                        arrTerminal: flight.arrTerminal,
+                        dep: flight.dpt,
+                        depAirport: flight.dptAirport,
+                        depTime: flight.dptTime,
+                        depTerminal: flight.dptTerminal,
+                        queryTicket: Utils.encodeBase64(JSON.stringify({
+                            dep: flight.dpt,
+                            arr: flight.arr,
+                            date: req.query.end,
+                            time: flight.dptTime,
+                            num: flight.flightNum
+                        })),
+                        queryUrl: req.protocol + "://" + req.get('host') + "/api/prices?ticket=" + Utils.encodeBase64(JSON.stringify({
+                            dep: flight.dpt,
+                            arr: flight.arr,
+                            date: req.query.end,
+                            time: flight.dptTime,
+                            num: flight.flightNum
+                        }))
+                    };
+                });
+                Utils.renderJson(res, response);
             } else {
-                Utils.renderJsonError(res, "查詢失敗，航班信息");
+                Utils.renderJsonError(res, "查詢失敗，無航班信息");
             }
         } catch (e) {
             Utils.renderJsonError(res, "查詢失敗，原因：" + e);
@@ -44,48 +99,61 @@ router.get('/flights', async (req, res, next) => {
 });
 
 router.get('/prices', async (req, res, next) => {
-    if (req.query.dep && req.query.arr && req.query.date && req.query.flightNo) {
-        let dep = req.query.dep.toUpperCase();
-        let arr = req.query.arr.toUpperCase();
-        let flightNo = req.query.flightNo.toUpperCase();
-        let date = req.query.date;
+    try {
+        let params = JSON.parse(Utils.decodeBase64(req.query.ticket));
+        let dep = params.dep.toUpperCase();
+        let arr = params.arr.toUpperCase();
+        let flightNo = params.num.toUpperCase();
+        let time = params.time;
+        let date = params.date;
         try {
             let result = await Api.queryPrice(dep, arr, date, flightNo);
             if (result && result.vendors && result.vendors.length) {
                 Utils.renderJson(res, result.vendors.map((vendor) => {
                     return {
+                        dep: dep,
+                        arr: arr,
+                        date: date,
                         price: vendor.price,
                         client: vendor.domain,
                         cabin: vendor.cabin,
-                        encrypted_info: Utils.encodeBase64(JSON.stringify(vendor))
+                        time: time,
+                        flightNo: flightNo,
+                        ticket: Utils.encodeBase64(JSON.stringify({
+                            dep: dep, arr: arr, date: date, time: time, flightNo: flightNo, price: vendor
+                        }))
                     };
-                }));
+                }).sort(function (a, b) {
+                    return a.price - b.price;
+                })[0]);
             } else {
                 Utils.renderJsonError(res, "無價格信息結果");
             }
         } catch (e) {
             Utils.renderJsonError(res, "查詢失敗，原因：" + e);
         }
-    } else {
+    } catch (ex) {
         Utils.renderJsonError(res, "參數錯誤");
     }
 });
 
 
 router.get('/order', async (req, res, next) => {
-    if (req.query.orderNo) {
+    if (req.query.id) {
+        let orders = await Order.findByCon({groupId: req.query.id});
         try {
-            let order = await Api.orderDetail(req.query.orderNo);
-            if (order) {
-                Utils.renderJson(res, await Order.insertOrUpdate({
-                    orderNo: order.detail.orderNo,
-                    orderStatus: order.detail.status,
-                    notice: order.other.tgqMsg,
-                    passengerTicketNo: order.passengers[0].ticketNo
-                }));
-            } else {
-                Utils.renderJsonError(res, "查詢失敗，無此訂單信息");
+            for (let key in orders) {
+                let order = await Api.orderDetail(orders[key].orderNo);
+                if (order) {
+                    await Order.insertOrUpdate({
+                        orderNo: order.detail.orderNo,
+                        orderStatus: order.detail.status,
+                        notice: order.other.tgqMsg,
+                        passengerTicketNo: order.passengers[0].ticketNo
+                    });
+                }
             }
+            Utils.renderJson(res, groupDetail(req.query.id));
         } catch (e) {
             Utils.renderJsonError(res, "查詢失敗，原因：" + e);
         }
@@ -177,26 +245,24 @@ router.post('/change', async (req, res, next) => {
 
 
 router.post('/booking', async (req, res, next) => {
-    if (req.query.dep && req.query.arr && req.query.date && req.query.time && req.query.flightNo && req.body.encrypted_info) {
-        let dep = req.query.dep.toUpperCase();
-        let arr = req.query.arr.toUpperCase();
-        let flightNo = req.query.flightNo.toUpperCase();
-        let date = req.query.date;
-        let time = req.query.time;
-        let price = JSON.parse(Utils.decodeBase64(req.body.encrypted_info));
-
+    try {
+        let start = JSON.parse(Utils.decodeBase64(req.body.startTicket));
+        let end = JSON.parse(Utils.decodeBase64(req.body.endTicket));
         let name = req.body.name;
         let identify = req.body.identify;
         let birthday = req.body.birthday;
         let sex = req.body.sex;
 
         try {
-            let booking = await Api.booking(dep, arr, date, time, flightNo, price);
-            if (booking) {
-                let order = await Api.order(name, identify, birthday, sex, booking);
+            let groupId = "TAN" + new Date().getTime();
+            let bookingStart = await Api.booking(start.dep, start.arr, start.date, start.time, start.flightNo, start.price);
+            let bookingEnd = await Api.booking(end.dep, end.arr, end.date, end.time, end.flightNo, end.price);
+            if (bookingStart && bookingEnd) {
+                let order = await Api.order(name, identify, birthday, sex, bookingStart);
                 let orderInfo = await Api.orderDetail(order.orderNo);
                 let arrTime = orderInfo.flightInfo[0].deptTime;
-                Utils.renderJson(res, await Order.insertOrUpdate({
+                await Order.insertOrUpdate({
+                    groupId: groupId,
                     orderId: order.id,
                     orderNo: orderInfo.detail.orderNo,
                     orderStatus: orderInfo.detail.status,
@@ -205,7 +271,7 @@ router.post('/booking', async (req, res, next) => {
                     orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
                     orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
                     orderRealPrice: orderInfo.passengerTypes[0].realPrice,
-                    orderAgent: booking.extInfo.clientId,
+                    orderAgent: bookingStart.extInfo.clientId,
                     passengerName: orderInfo.passengers[0].name,
                     passengerType: orderInfo.passengers[0].type,
                     passengerIdentifyType: orderInfo.passengers[0].cardType,
@@ -213,25 +279,79 @@ router.post('/booking', async (req, res, next) => {
                     passengerTicketNo: orderInfo.passengers[0].ticketNo,
                     passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                     flightNo: orderInfo.flightInfo[0].flightNum,
-                    flightDate: Date.parse(date),
+                    flightDate: Date.parse(start.date),
                     flightDeparture: orderInfo.flightInfo[0].dptCity,
                     flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
-                    flightDepartureTime: Date.parse(date + ' ' + time),
+                    flightDepartureTime: Date.parse(start.date + ' ' + start.time),
                     flightArrival: orderInfo.flightInfo[0].arrCity,
                     flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
-                    flightArrivalTime: Date.parse(date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+                    flightArrivalTime: Date.parse(start.date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
                     flightCabin: orderInfo.flightInfo[0].cabin,
                     notice: orderInfo.other.tgqMsg,
-                }));
+                });
+                order = await Api.order(name, identify, birthday, sex, bookingEnd);
+                orderInfo = await Api.orderDetail(order.orderNo);
+                arrTime = orderInfo.flightInfo[0].deptTime;
+                await Order.insertOrUpdate({
+                    groupId: groupId,
+                    orderId: order.id,
+                    orderNo: orderInfo.detail.orderNo,
+                    orderStatus: orderInfo.detail.status,
+                    orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
+                    orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+                    orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
+                    orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                    orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+                    orderAgent: bookingEnd.extInfo.clientId,
+                    passengerName: orderInfo.passengers[0].name,
+                    passengerType: orderInfo.passengers[0].type,
+                    passengerIdentifyType: orderInfo.passengers[0].cardType,
+                    passengerIdentify: orderInfo.passengers[0].cardNum,
+                    passengerTicketNo: orderInfo.passengers[0].ticketNo,
+                    passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
+                    flightNo: orderInfo.flightInfo[0].flightNum,
+                    flightDate: Date.parse(end.date),
+                    flightDeparture: orderInfo.flightInfo[0].dptCity,
+                    flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
+                    flightDepartureTime: Date.parse(end.date + ' ' + end.time),
+                    flightArrival: orderInfo.flightInfo[0].arrCity,
+                    flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
+                    flightArrivalTime: Date.parse(end.date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+                    flightCabin: orderInfo.flightInfo[0].cabin,
+                    notice: orderInfo.other.tgqMsg,
+                });
+                Utils.renderJson(res, await groupDetail(groupId));
             } else {
                 Utils.renderJsonError(res, "預約失敗，票價已更新，無發預約");
             }
         } catch (e) {
             Utils.renderJsonError(res, "預約失敗,原因：" + e);
         }
-    } else {
+    } catch (ex) {
         Utils.renderJsonError(res, "參數錯誤");
     }
 });
+
+async function groupDetail(groupId) {
+    let orders = await new Promise((resolve, reject) => {
+        Order.query().where({groupId: groupId}).lean().exec((err, orders) => {
+            if (err) reject(err);
+            else resolve(orders);
+        })
+    });
+    let res = {
+        orderId: groupId,
+        flights: {}
+    };
+    orders.forEach((order) => {
+        delete order.groupId;
+        delete order.orderId;
+        delete order.orderNo;
+        order.id = groupId + '-' + order._id;
+        delete order._id;
+        res.flights[Utils.formatDate(order.flightDate)] = order;
+    });
+    return res;
+}
 
 module.exports = router;

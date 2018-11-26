@@ -36,6 +36,9 @@ module.exports = {
             })
         })
     },
+    query: function () {
+        return plane_orders.find({});
+    },
     findByCon: function (condition) {
         return new Promise(function (resolve, reject) {
             plane_orders.findOne(condition).lean().exec(function (err, data) {
@@ -53,7 +56,7 @@ module.exports = {
         })
     },
     search: function (startDate, endDate, orderNo, ticketNo, passengerName, page = 0) {
-        let query = plane_orders.find({});
+        let query = plane_orders.find({groupId: {$exists: true}});
 
         if (startDate || endDate) {
             let createAt = {};
@@ -84,11 +87,11 @@ module.exports = {
                         passengerName: new RegExp('^' + passengerName + '$', "i")
                     }
                 }*/
-                passengerName : new RegExp('^'+ passengerName + "$" ,'i')
+                passengerName: new RegExp('^' + passengerName + "$", 'i')
             });
         }
         return new Promise((resolve, reject) => {
-            query.skip(30 * page).limit(30).exec((err, res) => {
+            query.skip(60 * page).limit(30).sort( { groupId: -1 } ).exec((err, res) => {
                 if (err) reject(err);
                 else resolve(res);
             })
