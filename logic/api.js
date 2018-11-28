@@ -13,6 +13,16 @@ router.post('/SearchAV', async (req, res, next) => {
     let flights = {};
     let products = {};
     let rules = {};
+    if(!result.flightInfos||!result2.flightInfos){
+        return Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": "500", //状态码 0-成功  非0-失败
+                "errorMsg": "無航班信息" //失败具体原因
+            },
+            "search": null
+        });
+    }
     result.flightInfos.forEach((start, startIndex) => {
         if (!flights[start.flightNum]) {
             flights[start.flightNum] = {
