@@ -6,7 +6,7 @@ let Order = require('../model/order');
 
 
 router.post('/SearchAV', async (req, res, next) => {
-    let params = req.body.segments[0];
+    let params = req.body.searchCondition.segments[0];
     let result = await Api.queryFlight(params.dep, params.arr, params.date);
     let result2 = await Api.queryFlight(params.arr, params.dep, params.returnDate);
     let flightProductGroup = [];
