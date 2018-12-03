@@ -3,6 +3,7 @@ let router = express.Router();
 let Api = require('../lib/flight');
 let Utils = require('../lib/utils');
 let Order = require('../model/order');
+let cheerio = require('cheerio');
 
 
 router.post('/SearchAV', async (req, res, next) => {
@@ -23,7 +24,7 @@ router.post('/SearchAV', async (req, res, next) => {
             "search": null
         });
     }
-    for (let startIndex = 0; startIndex < Math.min(result.flightInfos.length,5); startIndex++) {
+    for (let startIndex = 0; startIndex < Math.min(result.flightInfos.length, 5); startIndex++) {
         let start = result.flightInfos[startIndex];
         if (start.flightNum.toUpperCase().indexOf('MU') != -1) {
             if (!flights[start.flightNum]) {
@@ -43,9 +44,9 @@ router.post('/SearchAV', async (req, res, next) => {
                         "stopCode": start.stopCityCode //经停机场三字码
                     },
                     "codeShare": start.codeShare, //主飞航班号，为空表示非共享
-                    "cabinYPrice": start.cabin === "Y" ? start.barePrice : "N/A", //Y基准价舱价
-                    "cabinFPrice": start.cabin === "F" ? start.barePrice : "N/A", //F舱基准价
-                    "cabinCPrice": start.cabin === "C" ? start.barePrice : "N/A", //C舱基准价
+                    "cabinYPrice": start.barePrice, //Y基准价舱价
+                    "cabinFPrice": start.barePrice, //F舱基准价
+                    "cabinCPrice": start.barePrice, //C舱基准价
                     "punctualityRate": "95.0%", //准点率
                     "adultFuelTax": start.arf, //成人燃油税
                     "airportTax": start.tof, //基建
@@ -59,7 +60,7 @@ router.post('/SearchAV', async (req, res, next) => {
                 }
             }
 
-            for (let endIndex = 0; endIndex < Math.min(result2.flightInfos.length,5); endIndex++) {
+            for (let endIndex = 0; endIndex < Math.min(result2.flightInfos.length, 5); endIndex++) {
                 let end = result2.flightInfos[endIndex];
                 if (end.flightNum.toUpperCase().indexOf('MU') != -1) {
                     let prices = await new Promise((resolve, reject) => {
@@ -92,9 +93,9 @@ router.post('/SearchAV', async (req, res, next) => {
                                 "stopCode": end.stopCityCode //经停机场三字码
                             },
                             "codeShare": end.codeShare, //主飞航班号，为空表示非共享
-                            "cabinYPrice": end.cabin === "Y" ? end.barePrice : "N/A", //Y基准价舱价
-                            "cabinFPrice": end.cabin === "F" ? end.barePrice : "N/A", //F舱基准价
-                            "cabinCPrice": end.cabin === "C" ? end.barePrice : "N/A", //C舱基准价
+                            "cabinYPrice": end.barePrice, //Y基准价舱价
+                            "cabinFPrice": end.barePrice, //F舱基准价
+                            "cabinCPrice": end.barePrice, //C舱基准价
                             "punctualityRate": "95.0%", //准点率
                             "adultFuelTax": end.arf, //成人燃油税
                             "airportTax": end.tof, //基建
@@ -107,137 +108,190 @@ router.post('/SearchAV', async (req, res, next) => {
                             "dataExt": {}
                         }
                     }
-                    rules[Utils.encodeBase64(start.flightNum)] = {
+                    rules[startPrice.tgqRuleId] = {
                         "adult": {
-                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges,
+                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "time": e.time
+                                }
+                            }),
                             "canRefund": true, //选传，是否可退
                             "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
                             "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": startPrice.booking.tgqShowData.tgqText, //改签文本，必传
+                            "changeText": cheerio.load(startPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": startPrice.booking.tgqShowData.tgqPercentText, //是否签转，必传
+                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "child": {
-                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges,
+                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "time": e.time
+                                }
+                            }),
                             "canRefund": true, //选传，是否可退
                             "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
                             "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": startPrice.booking.tgqShowData.tgqText, //改签文本，必传
+                            "changeText": cheerio.load(startPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": startPrice.booking.tgqShowData.tgqPercentText, //是否签转，必传
+                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "infant": {
-                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges,
+                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "time": e.time
+                                }
+                            }),
                             "canRefund": true, //选传，是否可退
                             "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
                             "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": startPrice.booking.tgqShowData.tgqText, //改签文本，必传
+                            "changeText": cheerio.load(startPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": startPrice.booking.tgqShowData.tgqPercentText, //是否签转，必传
+                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "specialRuleInfo": { //特殊票务说明
                             "specialRuleText": startPrice.booking.policyInfo.specialRule
                         }
                     };
-                    rules[Utils.encodeBase64(end.flightNum)] = {
+                    rules[startPrice.backTgqRuleId] = {
                         "adult": {
-                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges,
+                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "time": e.time
+                                }
+                            }),
                             "canRefund": true, //选传，是否可退
                             "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
                             "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": endPrice.booking.tgqShowData.tgqText, //改签文本，必传
+                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": startPrice.booking.tgqShowData.tgqPercentText, //是否签转，必传
+                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "child": {
-                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges,
+                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "time": e.time
+                                }
+                            }),
                             "canRefund": true, //选传，是否可退
                             "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
                             "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": endPrice.booking.tgqShowData.tgqText, //改签文本，必传
+                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": endPrice.booking.tgqShowData.tgqPercentText, //是否签转，必传
+                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "infant": {
-                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges,
+                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "time": e.time
+                                }
+                            }),
                             "canRefund": true, //选传，是否可退
                             "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
                             "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": endPrice.booking.tgqShowData.tgqText, //改签文本，必传
+                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": endPrice.booking.tgqShowData.tgqPercentText, //是否签转，必传
+                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "specialRuleInfo": { //特殊票务说明
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    products[Utils.encodeBase64(start.flightNum)] = {
-                        "cabin": startPrice.cabin,
+                    products[Utils.encodeBase64(start.flightNum + "_" + end.flightNum)] = {
+                        "cabin": [startPrice.cabin[0], endPrice.cabin[0]],
                         "source": "own",
-                        "flightNo": start.flightNum, //航班号 往返为CA4387-CA4378
-                        "adult": startPrice.adult,
-                        "child": startPrice.child,
-                        "infant": startPrice.child,
+                        "flightNo": start.flightNum + "-" + end.flightNum, //航班号 往返为CA4387-CA4378
+                        "adult": {
+                            "printPrice": Number(startPrice.adult.printPrice) + Number(endPrice.adult.printPrice),
+                            "salePrice": Number(startPrice.adult.salePrice) + Number(endPrice.adult.salePrice),
+                            "discount": startPrice.adult.discount,
+                            "flightPrice": Number(startPrice.adult.flightPrice) + Number(endPrice.adult.flightPrice),
+                            "fuelTax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax),
+                            "airportFee": Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee),
+                            "tax": Number(startPrice.adult.tax) + Number(endPrice.adult.tax)
+                        },
+                        "child": {
+                            "printPrice": Number(startPrice.child.printPrice) + Number(endPrice.child.printPrice),
+                            "salePrice": Number(startPrice.child.salePrice) + Number(endPrice.child.salePrice),
+                            "discount": startPrice.child.discount,
+                            "flightPrice": Number(startPrice.child.flightPrice) + Number(endPrice.child.flightPrice),
+                            "fuelTax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax),
+                            "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
+                            "tax": Number(startPrice.child.tax) + Number(endPrice.child.tax)
+                        },
+                        "infant": {
+                            "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
+                            "salePrice": Number(startPrice.infant.salePrice) + Number(endPrice.infant.salePrice),
+                            "discount": startPrice.infant.discount,
+                            "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
+                            "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
+                            "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
+                            "tax": Number(startPrice.infant.tax) + Number(endPrice.infant.tax)
+                        },
                         "tgqRuleId": startPrice.tgqRuleId, //退改签key，对应tgqRules
                         "backTgqRuleId": startPrice.backTgqRuleId //往返回程退改签key 对应tgqRules
-                    };
-                    products[Utils.encodeBase64(end.flightNum)] = {
-                        "cabin": endPrice.cabin,
-                        "source": "own",
-                        "flightNo": end.flightNum, //航班号 往返为CA4387-CA4378
-                        "adult": endPrice.adult,
-                        "child": endPrice.child,
-                        "infant": endPrice.child,
-                        "tgqRuleId": endPrice.tgqRuleId, //退改签key，对应tgqRules
-                        "backTgqRuleId": endPrice.backTgqRuleId //往返回程退改签key 对应tgqRules
                     };
                     flightProductGroup.push({
                         "flight": [
                             {
                                 "flightIndex": start.flightNum, //航班索引，对应flights
-                                "tripIndex": startIndex, //航程 1-第一程
-                                "segIndex": startIndex //航段 1-第一段
+                                "tripIndex": 1, //航程 1-第一程
+                                "segIndex": 1 //航段 1-第一段
                             },
                             {
                                 "flightIndex": end.flightNum, //航班索引，对应flights
-                                "tripIndex": endIndex, //航程 1-第一程
-                                "segIndex": endIndex //航段 1-第一段
+                                "tripIndex": 2, //航程 1-第一程
+                                "segIndex": 1 //航段 1-第一段
                             }
                         ],
-                        "productList": [
-                            Utils.encodeBase64(start.flightNum),
-                            Utils.encodeBase64(end.flightNum)
-                        ]
+                        "productList": [Utils.encodeBase64(start.flightNum + "_" + end.flightNum)]
                     })
                 }
             }
