@@ -245,9 +245,13 @@ router.post('/SearchAV', async (req, res, next) => {
                         }
                     };
                     products[Utils.encodeBase64(start.flightNum + "_" + end.flightNum)] = {
+                        "productKey": Utils.encodeBase64(start.flightNum + "_" + end.flightNum),
+                        "productName": "经济仓报价",
+                        "productType": 1,
                         "cabin": [startPrice.cabin[0], endPrice.cabin[0]],
                         "source": "own",
                         "flightNo": start.flightNum + "-" + end.flightNum, //航班号 往返为CA4387-CA4378
+                        "agent": false,
                         "adult": {
                             "printPrice": Number(startPrice.adult.printPrice) + Number(endPrice.adult.printPrice),
                             "salePrice": Number(startPrice.adult.salePrice) + Number(endPrice.adult.salePrice),
