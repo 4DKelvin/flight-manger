@@ -108,7 +108,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "dataExt": {}
                         }
                     }
-                    rules[startPrice.tgqRuleId] = {
+                    rules[startPrice.tgqRuleId  + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId] = {
                         "adult": {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
@@ -176,7 +176,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": startPrice.booking.policyInfo.specialRule
                         }
                     };
-                    rules[startPrice.backTgqRuleId] = {
+                    rules[startPrice.backTgqRuleId  + "-" + startIndex + "-" + endIndex + "-" + endPrice.backTgqRuleId] = {
                         "adult": {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
@@ -279,8 +279,8 @@ router.post('/SearchAV', async (req, res, next) => {
                             "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
                             "tax": Number(startPrice.infant.tax) + Number(endPrice.infant.tax)
                         },
-                        "tgqRuleId": startPrice.tgqRuleId, //退改签key，对应tgqRules
-                        "backTgqRuleId": startPrice.backTgqRuleId //往返回程退改签key 对应tgqRules
+                        "tgqRuleId": startPrice.tgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId, //退改签key，对应tgqRules
+                        "backTgqRuleId": startPrice.backTgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.backTgqRuleId //往返回程退改签key 对应tgqRules
                     };
                     flightProductGroup.push({
                         "flight": [
