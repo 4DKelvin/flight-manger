@@ -1,12 +1,22 @@
 let express = require('express');
 let router = express.Router();
 let Order = require('../model/order');
+let Customer = require('../model/customer');
 let Utils = require('../lib/utils');
 let Api = require('../lib/flight');
 
 /* GET home page. */
 router.get('/', async (req, res, next) => {
+
+    var session = req.session;
+    //console.log(session.user);
+    if(!req.session.user){
+        res.render('loginT', { title: '登陆界面'});
+    }
+
     var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
+
+    console.log(orders);
 
     res.render('index', {
         title: '訂單管理',
@@ -29,6 +39,13 @@ router.get('/', async (req, res, next) => {
 });
 
 router.get('/detail', async (req, res, next) => {
+
+    var session = req.session;
+    console.log(session.user);
+    if(!req.session.user){
+        res.render('loginT', { title: '登陆界面'});
+    }
+
     let orders = await new Promise((resolve, reject) => {
         Order.query().where({groupId: req.query.orderNo}).lean().exec((err, orders) => {
             if (err) reject(err);
@@ -60,7 +77,7 @@ router.get('/detail', async (req, res, next) => {
             if (order.orderOriginPrice) {
                 order.price = '¥ ' + Number(order.orderOriginPrice).toFixed(2);
             }
-            return order;
+            return orders;
         })
     });
 });
@@ -125,6 +142,105 @@ router.get('/pay', async (req, res, next) => {
     } else {
         Utils.renderJsonError(res, "參數錯誤");
     }
+});
+
+router.get('/loginT', async (req, res, next) => {
+    res.render('loginT', { title: '登陆界面'});
+});
+
+router.post('/login', async (req, res, next) =>{
+
+    if(!req.body.name||!req.body.password){
+        Utils.renderJsonError(res, "请输入账户和密码！");
+    }
+
+    var condition = {"name":req.body.name,"password":req.body.password}
+    var cust = await Customer.findByCon(condition);
+
+    if(cust.length==1){
+
+        var user={
+            name:req.body.name,
+            password:req.body.password
+        }
+        req.session.user=user;
+
+        //req.session.name = req.body.name; // 登录成功，设置 session
+
+        var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
+
+        res.render('index', {
+            title: '訂單管理',
+            orders: orders.map((o) => {
+                if (o.flightDate) {
+                    o.date = Utils.formatDate(o.flightDate);
+                }
+                if (o.flightArrivalTime) {
+                    o.flightArrivalDateTime = Utils.formatDateTime(o.flightArrivalTime);
+                }
+                if (o.flightDepartureTime) {
+                    o.flightDepartureDateTime = Utils.formatDateTime(o.flightDepartureTime);
+                }
+                if (o.orderTotalPrice) {
+                    o.total = '¥ ' + Number(o.orderTotalPrice).toFixed(2);
+                }
+                return o;
+            })
+        });
+    }else{
+        Utils.renderJsonError(res, "不存在该用户！");
+    }
+
+});
+
+router.get('/registerT', async (req, res, next) => {
+    res.render('registerT', { title: '注册界面'});
+});
+
+router.post('/register', async (req, res, next) =>{
+
+    if(!req.body.name||!req.body.password||!req.body.sex||!req.body.certificatesNo){
+        Utils.renderJsonError(res, "请完善你的信息！");
+    }
+
+    var condition = {"name":req.body.name,"password":req.body.password}
+    var cust = await Customer.findByCon(condition);
+
+    console.log(cust.length);
+
+    if(cust.length==0){
+        var addJson = {
+            name: req.body.name,
+            password: req.body.password,
+            sex:  req.body.sex,
+            certificatesNo: req.body.certificatesNo,
+        };
+        await Customer.insert(addJson);
+
+        var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
+
+        res.render('index', {
+            title: '訂單管理',
+            orders: orders.map((o) => {
+                if (o.flightDate) {
+                    o.date = Utils.formatDate(o.flightDate);
+                }
+                if (o.flightArrivalTime) {
+                    o.flightArrivalDateTime = Utils.formatDateTime(o.flightArrivalTime);
+                }
+                if (o.flightDepartureTime) {
+                    o.flightDepartureDateTime = Utils.formatDateTime(o.flightDepartureTime);
+                }
+                if (o.orderTotalPrice) {
+                    o.total = '¥ ' + Number(o.orderTotalPrice).toFixed(2);
+                }
+                return o;
+            })
+        });
+    }else{
+        Utils.renderJsonError(res, "已存在注册用户！");
+    }
+
 });
 
 module.exports = router;

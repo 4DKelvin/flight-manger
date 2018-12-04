@@ -5,7 +5,25 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
+// 导入
+const session = require("express-session");
+const FileStore = require('session-file-store')(session);
+
 let app = express();
+
+var identityKey = 'skey';
+//app.use(cookieParser('sessiontest'));
+app.use(session({
+    name: identityKey,
+    secret: 'sessiontest',  // 用来对session id相关的cookie进行签名
+    store: new FileStore(),  // 本地存储session（文本文件，也可以选择其他store，比如redis的）
+    saveUninitialized: false,  // 是否自动保存未初始化的会话，建议false
+    resave: false,  // 是否每次都重新保存会话，建议false
+    cookie: {
+        maxAge: 1000 * 60 * 30 // 有效期，单位是毫秒。30分钟
+    }
+}));
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(logger('dev'));
@@ -31,4 +49,8 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+
+
 module.exports = app;
