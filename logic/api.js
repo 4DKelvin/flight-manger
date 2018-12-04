@@ -108,13 +108,13 @@ router.post('/SearchAV', async (req, res, next) => {
                             "dataExt": {}
                         }
                     }
-                    rules[startPrice.tgqRuleId  + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId] = {
+                    rules[startPrice.tgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId] = {
                         "adult": {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
                                     "time": e.time
                                 }
                             }),
@@ -176,7 +176,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": startPrice.booking.policyInfo.specialRule
                         }
                     };
-                    rules[startPrice.backTgqRuleId  + "-" + startIndex + "-" + endIndex + "-" + endPrice.backTgqRuleId] = {
+                    rules[startPrice.backTgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.backTgqRuleId] = {
                         "adult": {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
