@@ -6,6 +6,7 @@ block content
         form.am-form.am-margin-left-sm(action='/takeOrder',method='get')
             fieldset
                 legend.am-text-sm 訂單編號：#{orders[0].groupId} / 下單日期：#{orders[0].date}
+                       input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='locked', id='locked')
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tbody
                         tr
@@ -100,10 +101,11 @@ block content
                             td #{order.orderStatus}
                             td #{order.total}
                             td
-                                input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="refresh" value='刷新')
-                                input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付')
-                                input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票')
-                                input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='change', value='改簽')
+                                input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="refresh" value='刷新' id="refresh")
+                                input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付' id="pay")
+                                input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票' id="refund")
+                                input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='change', value='改簽' id="change")
+                                input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', id="orderNo" name='orderNo', value='#{order.orderNo}')
             fieldset
                 legend.am-text-sm 該簽退規則
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
@@ -123,18 +125,45 @@ block content
 
 block script
     script(type='text/javascript').
+
+        var flag = "";
+
+        $(document).ready(function (){
+            change(#{lock});
+        });
+
+        function change(status){
+            if (status == "2") {
+                $("#locked").val("解锁订单");
+                flag = "2";
+            } else if (status == "1") {
+                $("#locked").val("解锁订单");
+                document.getElementById("locked").setAttribute("disabled", true);
+                $("input[name='refresh']").prop("disabled", true);
+                $("input[name='pay']").prop("disabled", true);
+                $("input[name='refund']").prop("disabled", true);
+                $("input[name='change']").prop("disabled", true);
+            } else {
+                $("#locked").val("锁定订单");
+                flag = "0";
+            }
+        }
+
         $(document).on('click', '.action', function (e) {
             e.preventDefault();
             var parent = $(this).parents('tr');
-            var orderNo = parent.attr('order-no');
+            var orderNo = $("#orderNo").val();
             var orderId = parent.attr('order-id');
             var orderAgent = parent.attr('order-agent');
             var action = $(this).attr('name');
-            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId, function (res) {
+            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId + '&flag=' + flag, function (res) {
                 if (res.code == 200) {
                     if (res.code == '200') {
                         if (action == 'pay') {
                             parent.find('td').eq(3).html("支付成功等待出票");
+                        } else if( action == 'locked' ){
+                            alert("操作成功");
+                            change(res.data);
                         } else {
                             parent.find('td').eq(3).html(res.data.orderStatus);
                             $(".ticket[order-no='" + orderNo + "']").html(res.data.passengerTicketNo);
