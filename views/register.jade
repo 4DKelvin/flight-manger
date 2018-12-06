@@ -1,45 +1,48 @@
 block content
     head
         meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
-        title 用户注册
+        title 用户登录
+        link(rel='stylesheet', href='http://amazeui.org/css/amazeui.min.css')
         link(rel='stylesheet', href='/stylesheets/style.css')
-        script(type='text/javascript').
+
+        style.
+            .header {
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 200%;
+                color: #333;
+                margin-top: 30px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
     body
-        table.login_tb1
-            tbody
-                tr(valign='middle', align='center')
-                    td(height='100%')
-                        table.login_tb2(cellspacing='0', cellpadding='0', border='0', align='center')
-                            tbody
-                                tr(valign='middle')
-                                    td.login_td1(colspan='2')
-                                        font(size='4px', face='黑体', color='#196ed1') 用户登录
-                                tr
-                                    td.login_td2
-                                        form(action='/register', name='register', method='post')
-                                            table
-                                                tbody
-                                                    tr
-                                                        td.login_td(width='66', height='20') 用户名：
-                                                        td.login_td(width='115', height='20')
-                                                            input.login_input(type='text', name='name')
-                                                        td
-                                                    tr
-                                                        td.login_td(height='20') 密 码：
-                                                        td.login_td(height='20')
-                                                            input.login_input(type='password', name='password')
-                                                        td
-                                                    tr
-                                                        td.login_td(height='20') 性 别：
-                                                        td.login_td(height='20')
-                                                            input.login_input(type='text', name='sex')
-                                                        td
-                                                    tr
-                                                        td.login_td(height='20') 身份证号码：
-                                                        td.login_td(height='20')
-                                                            input.login_input(type='text', name='certificatesNo')
-                                                        td
-                                                    tr
-                                                        td(colspan='2', height='20', align='center')
-                                                            input.login_button(type='reset', value='重置')
-                                                            input.login_button(type='submit', value='注册')
+        .header
+            .am-g
+                h1 机票订单管理系统
+            hr
+        .am-g
+            .am-u-lg-6.am-u-md-8.am-u-sm-centered
+                h3 注  册
+                hr
+                form.am-form(action='/register', name='register', method='post')
+                    label(for='email') 用户名:
+                    input#email(type='text', name='name', value='')
+                    br
+                    label(for='password') 密码:
+                    input#password(type='password', name='password', value='')
+                    br
+                    label(for='cpassword') 确认密码:
+                    input#cpassword(type='password', name='cpassword', value='')
+                    br
+                    label(for='certificatesNo') 身份证号:
+                    input#certificatesNo(type='password', name='certificatesNo', value='')
+                    br
+                    .am-cf
+                        input.am-btn.am-btn-primary.am-btn-sm.am-fl(type='submit', name='', value='注  册')
+                        a.am-btn.am-btn-default.am-btn-sm.am-fr(href='/login') 已有账号?
+                hr
+                p © 2018 Licensed under MIT license.

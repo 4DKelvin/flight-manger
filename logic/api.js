@@ -3,11 +3,183 @@ let router = express.Router();
 let Api = require('../lib/flight');
 let Utils = require('../lib/utils');
 let Order = require('../model/order');
+let Key = require('../model/key');
 let cheerio = require('cheerio');
 
 
+router.post('/CheckPay', async (req, res, next) => {
+    try {
+        let orders = await new Promise((resolve, reject) => {
+            Order.query().where({groupId: req.body.payCheck.orderNo}).lean().exec((err, res) => {
+                if (err) reject(err);
+                else resolve(res);
+            })
+        });
+        let remotes = await new Promise((resolve, reject) => {
+            Promise.all(orders.map((o) => {
+                return Api.validate(o.orderId, o.orderAgent);
+            })).then((res) => {
+                resolve(res.map((o) => {
+                    return o;
+                }));
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": "0",
+                "errorMsg": ""
+            },
+            "orderNo": req.body.payCheck.orderNo,
+            "businessOrderNo": req.body.payCheck.businessOrderNo,
+            "dataExt": {}
+        });
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": 1002, //状态码 0-成功  非0-失败
+                "errorMsg": e //失败具体原因
+            }
+        })
+    }
+});
+
+router.post('/OrderInfo', async (req, res, next) => {
+    let orders = await new Promise((resolve, reject) => {
+        Order.query().where({groupId: req.body.orderNo}).lean().exec((err, res) => {
+            if (err) reject(err);
+            else resolve(res);
+        })
+    });
+    let remotes = await new Promise((resolve, reject) => {
+        Promise.all(orders.map((o) => {
+            return Api.orderDetail(o.orderNo);
+        })).then((res) => {
+            resolve(res.map((o) => {
+                o.status = o.detail.status;
+                o.other.tgqMsg = cheerio.load(o.other.tgqMsg).text();
+                delete o.detail;
+                delete o.contacterInfo;
+                return o;
+            }));
+        }).catch((err) => {
+            reject(err);
+        });
+    });
+    let status = {
+        "初始状态": 0,
+        "订单待确认": 1,
+        "订座成功等待支付": 2,
+        "订单确认成功待支付": 3,
+        "支付成功等待出票": 4,
+        "出票完成": 5,
+        "出票失败": 6,
+        "订单取消": 7,
+        "未知状态": -1
+    };
+    Utils.renderApiResult(res, {
+        "version": "1.0.0", //版本号
+        "status": {
+            "code": "0", //状态码 0-成功  非0-失败
+            "errorMsg": "" //失败具体原因
+        },
+        "businessOrderNo": req.body.businessOrderNo, //业务单号
+        "orderNo": req.body.orderNo, //航司单号
+        "orderStatus": [status[orders[0].orderStatus], status[orders[1].orderStatus]],
+        "flights": orders.map((o) => {
+            return {
+                "sequenceNum": 1, //航班序号
+                "carrier": o.flightNo.substr(0, 2), //销售承运人
+                "flightNum": o.flightNo, //航班号
+                "cabin": o.flightCabin, //舱位
+                "childCabin": "Y", //儿童舱位
+                "planeModule": "波音737(中)", //机型
+                "depAirportCode": o.flightDeparture, //出发机场三字码
+                "arrAirportCode": o.flightArrival, //到达机场三字码
+                "departureDate": Utils.formatDate(o.flightDate), //出发日期
+                "departureTime": Utils.formatDateTime(o.flightDepartureTime), //出发时间
+                "arrivalDate": Utils.formatDate(o.flightDate), //到达日期
+                "arrivalTime": Utils.formatDateTime(o.flightArrivalTime), //到达时间
+                // "depTerminal": "", //出发航站楼,可空
+                // "arrTerminal": "", //到达航站楼,可空
+                // "depAirport": "北京首都国际机场", //起飞机场名称
+                // "arrAirport": "上海虹桥国际机场", //到达机场名称
+                // "flightTime": "", //飞行时间,可空
+                // "actFlightNum": "", //实际承运航班号,可空
+                "codeShare": false, //是否共享航班,可空
+                "meal": true, //餐食
+                // "correct": "", //准点率,可空
+                "airCompany": "中国东方航空", //航司名称
+                // "depCity": "", //出发城市,可空
+                // "arrCity": "", //到达城市,可空
+                // "depCityCode": "", //出发城市码,可空
+                // "arrCityCode": "", //到达城市码,可空
+                // "crossDays": "",
+                "stopInfos": null,
+                // "actCarrier": "", //实际承运人为空表示就是销售承运人,可空
+                "segmentType": 1, //航段类型0单程
+                "stops": 0 //经停数
+            };
+        }),
+        "passengers": remotes[0].passengers.map((p) => {
+            return {
+                "uniqueKey": 1, //乘机人序号
+                "name": p.name, //乘机人姓名
+                "gender": "M", //性别 M/F
+                "ageType": p.type == "成人" ? 0 : 1, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                "birthday": "", //出生日期
+                "nationality": null, //国籍
+                "tickets": p.ticketNo ? [{
+                    "ticketNo": p.ticketNo, //票号
+                }] : [],
+                "cardType": "NI", //证件类型，NI：身份证，PP：护照，OT：其他
+                "cardNum": p.cardNum, //证件号码
+                "cardExpired": null, //证件过期时间
+                "cardIssuePlace": null,
+                "mobCountryCode": 86
+            };
+        }),
+        "tgqRules": [],
+        "priceInfo": {  //价格信息
+            "allPrice": Number(remotes[0].passengerTypes[0].allPrices) + Number(remotes[1].passengerTypes[0].allPrices),  //总价
+            "adultsCount": remotes[0].passengerTypes[0].count,  //成人数
+            "childrenCount": "0", //儿童数
+            "infantCount": "0",  //婴儿数
+            "adult": {
+                "printPrice": Number(remotes[0].passengerTypes[0].printPrice) + Number(remotes[1].passengerTypes[0].printPrice),
+                "salePrice": Number(remotes[0].passengerTypes[0].realPrice) + Number(remotes[1].passengerTypes[0].realPrice),
+                "discount": "0",
+                "flightPrice": Number(remotes[0].passengerTypes[0].constructionFee) + Number(remotes[1].passengerTypes[0].constructionFee),
+                "tax": Number(remotes[0].passengerTypes[0].fuelTax) + Number(remotes[1].passengerTypes[0].fuelTax)
+            },
+            "child": null,
+            "infant": null
+        },
+        // "payInfo": {
+        //     "payMoney": "1006.00", //支付金额
+        //     "payTime": "2016-12-12 18:01:18", //支付时间
+        //     "payDeadline": "2017-01-09 20:49:00" //支付截止时间
+        // },
+        // "expressDetail": {  //行程单信息
+        //     "status": 6,   //行程单状态 1-待支付 2-支付完成 3-处理中 4-已推送 5-已回推 6-已邮寄 7-已取消
+        //     "name": "行程单",   //邮寄姓名
+        //     "contactMob": "18205555555",   //联系电话
+        //     "xcdNo": "1234567",   //行程单号
+        //     "expressNo": "2342345423534",   //快递号
+        //     "expressCompany": "顺丰",  //快递公司
+        //     "payType": 2,   //支付类型 2-线上支付，无其它类型
+        //     "expressFee": 20,//快递费
+        //     "createTime": "2017-03-20 19:28:58"   //创建时间
+        // },
+        "dataExt": {},
+    });
+});
+
 router.post('/BookingOrder', async (req, res, next) => {
-    let bookings = JSON.parse(Utils.decodeBase64(req.body.bookingKey));
+    let bookings = JSON.parse(Utils.decodeBase64(await Key.get(req.body.bookingKey)));
     let name = req.body.passengers[0].name;
     let identify = req.body.passengers[0].cardNum;
     let birthday = req.body.passengers[0].birthday;
@@ -15,86 +187,109 @@ router.post('/BookingOrder', async (req, res, next) => {
     let bookingStart = bookings.start;
     let bookingEnd = bookings.end;
     let groupId = "TAN" + new Date().getTime();
-    if (bookingStart && bookingEnd) {
-        let order = await Api.order(name, identify, birthday, sex, bookingStart);
-        let orderInfo = await Api.orderDetail(order.orderNo);
-        let arrTime = orderInfo.flightInfo[0].deptTime;
-        let totalPrice = orderInfo.passengerTypes[0].allPrices;
-        await Order.insertOrUpdate({
-            groupId: groupId,
-            orderId: order.id,
-            orderNo: orderInfo.detail.orderNo,
-            orderStatus: orderInfo.detail.status,
-            orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-            orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-            orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-            orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
-            orderRealPrice: orderInfo.passengerTypes[0].realPrice,
-            orderAgent: bookingStart.extInfo.clientId,
-            passengerName: orderInfo.passengers[0].name,
-            passengerType: orderInfo.passengers[0].type,
-            passengerIdentifyType: orderInfo.passengers[0].cardType,
-            passengerIdentify: orderInfo.passengers[0].cardNum,
-            passengerTicketNo: orderInfo.passengers[0].ticketNo,
-            passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
-            flightNo: orderInfo.flightInfo[0].flightNum,
-            flightDate: Date.parse(bookings.sdate),
-            flightDeparture: orderInfo.flightInfo[0].dptCity,
-            flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
-            flightDepartureTime: Date.parse(bookings.sdate + ' ' + bookings.stime),
-            flightArrival: orderInfo.flightInfo[0].arrCity,
-            flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
-            flightArrivalTime: Date.parse(bookings.sdate + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
-            flightCabin: orderInfo.flightInfo[0].cabin,
-            notice: orderInfo.other.tgqMsg,
-        });
-        order = await Api.order(name, identify, birthday, sex, bookingEnd);
-        orderInfo = await Api.orderDetail(order.orderNo);
-        arrTime = orderInfo.flightInfo[0].deptTime;
-        totalPrice +=orderInfo.passengerTypes[0].allPrices;
-        await Order.insertOrUpdate({
-            groupId: groupId,
-            orderId: order.id,
-            orderNo: orderInfo.detail.orderNo,
-            orderStatus: orderInfo.detail.status,
-            orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-            orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-            orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-            orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
-            orderRealPrice: orderInfo.passengerTypes[0].realPrice,
-            orderAgent: bookingEnd.extInfo.clientId,
-            passengerName: orderInfo.passengers[0].name,
-            passengerType: orderInfo.passengers[0].type,
-            passengerIdentifyType: orderInfo.passengers[0].cardType,
-            passengerIdentify: orderInfo.passengers[0].cardNum,
-            passengerTicketNo: orderInfo.passengers[0].ticketNo,
-            passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
-            flightNo: orderInfo.flightInfo[0].flightNum,
-            flightDate: Date.parse(bookings.edate),
-            flightDeparture: orderInfo.flightInfo[0].dptCity,
-            flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
-            flightDepartureTime: Date.parse(bookings.edate + ' ' + bookings.etime),
-            flightArrival: orderInfo.flightInfo[0].arrCity,
-            flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
-            flightArrivalTime: Date.parse(bookings.edate + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
-            flightCabin: orderInfo.flightInfo[0].cabin,
-            notice: orderInfo.other.tgqMsg,
-        });
-        Utils.renderJson(res, {
+    try {
+        if (bookingStart && bookingEnd) {
+            let order = await Api.order(name, identify, birthday, sex, bookingStart);
+            let orderInfo = await Api.orderDetail(order.orderNo);
+            if (!order || !orderInfo.flightInfo) {
+                throw "去程预约失败";
+            }
+            let arrTime = orderInfo.flightInfo[0].deptTime;
+            let totalPrice = orderInfo.passengerTypes[0].allPrices;
+            await Order.insertOrUpdate({
+                groupId: groupId,
+                orderId: order.id,
+                orderNo: orderInfo.detail.orderNo,
+                orderStatus: orderInfo.detail.status,
+                orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
+                orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+                orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
+                orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+                orderAgent: bookingStart.extInfo.clientId,
+                passengerName: orderInfo.passengers[0].name,
+                passengerType: orderInfo.passengers[0].type,
+                passengerIdentifyType: orderInfo.passengers[0].cardType,
+                passengerIdentify: orderInfo.passengers[0].cardNum,
+                passengerTicketNo: orderInfo.passengers[0].ticketNo,
+                passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
+                flightNo: orderInfo.flightInfo[0].flightNum,
+                flightDate: Date.parse(bookings.sdate),
+                flightDeparture: orderInfo.flightInfo[0].dptCity,
+                flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
+                flightDepartureTime: Date.parse(bookings.sdate + ' ' + bookings.stime),
+                flightArrival: orderInfo.flightInfo[0].arrCity,
+                flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
+                flightArrivalTime: Date.parse(bookings.sdate + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+                flightCabin: orderInfo.flightInfo[0].cabin,
+                notice: orderInfo.other.tgqMsg,
+            });
+            order = await Api.order(name, identify, birthday, sex, bookingEnd);
+            orderInfo = await Api.orderDetail(order.orderNo);
+            if (!order || !orderInfo.flightInfo) {
+                throw "返程预约失败";
+            }
+            arrTime = orderInfo.flightInfo[0].deptTime;
+            totalPrice += orderInfo.passengerTypes[0].allPrices;
+            await Order.insertOrUpdate({
+                groupId: groupId,
+                orderId: order.id,
+                orderNo: orderInfo.detail.orderNo,
+                orderStatus: orderInfo.detail.status,
+                orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
+                orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+                orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
+                orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+                orderAgent: bookingEnd.extInfo.clientId,
+                passengerName: orderInfo.passengers[0].name,
+                passengerType: orderInfo.passengers[0].type,
+                passengerIdentifyType: orderInfo.passengers[0].cardType,
+                passengerIdentify: orderInfo.passengers[0].cardNum,
+                passengerTicketNo: orderInfo.passengers[0].ticketNo,
+                passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
+                flightNo: orderInfo.flightInfo[0].flightNum,
+                flightDate: Date.parse(bookings.edate),
+                flightDeparture: orderInfo.flightInfo[0].dptCity,
+                flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
+                flightDepartureTime: Date.parse(bookings.edate + ' ' + bookings.etime),
+                flightArrival: orderInfo.flightInfo[0].arrCity,
+                flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
+                flightArrivalTime: Date.parse(bookings.edate + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+                flightCabin: orderInfo.flightInfo[0].cabin,
+                notice: orderInfo.other.tgqMsg,
+            });
+            Utils.renderApiResult(res, {
+                "version": "1.0.0",
+                "status": {
+                    "code": 0,
+                    "errorMsg": null
+                },
+                "orderNo": groupId,
+                "businessOrderNo": groupId,
+                "totalPrice": totalPrice,
+                "adlPnr": "N/A",
+                "chPnr": "N/A"
+            });
+        } else {
+            Utils.renderApiResult(res, {
+                "version": "1.0.0",
+                "status": {
+                    "code": 1001,
+                    "errorMsg": "预约失败票价已经更新"
+                }
+            });
+        }
+    } catch (e) {
+        Utils.renderApiResult(res, {
             "version": "1.0.0",
             "status": {
-                "code": 0,
-                "errorMsg": null
-            },
-            "orderNo": groupId,
-            "businessOrderNo": groupId,
-            "totalPrice": totalPrice,
-            "adlPnr": "N/A",
-            "chPnr": "N/A"
+                "code": 1002,
+                "errorMsg": e
+            }
         });
-    } else {
-        Utils.renderJsonError(res, "預約失敗，票價已更新，無發預約");
     }
+
 });
 
 router.post('/CheckPrice', async (req, res, next) => {
@@ -111,20 +306,21 @@ router.post('/CheckPrice', async (req, res, next) => {
     });
     let startPrice = prices[0];
     let endPrice = prices[1];
+    let key = await Key.set(Utils.encodeBase64(new Date().getTime().toString()), {
+        start: startPrice.booking,
+        end: endPrice.booking,
+        sdate: params.sd,
+        stime: params.st,
+        edate: params.ed,
+        etime: params.et
+    });
     Utils.renderApiResult(res, {
         "version": "1.0.0",
         "status": {
             "code": "0",
             "errorMsg": ""
         },
-        "bookingKey": Utils.encodeBase64(JSON.stringify({
-            start: startPrice.booking,
-            end: endPrice.booking,
-            sdate: params.sd,
-            stime: params.st,
-            edate: params.ed,
-            etime: params.et
-        })),   //验舱验价缓存key，生单时带回
+        "bookingKey": key,   //验舱验价缓存key，生单时带回
         "avCheckResult": [{    //这里返回的是一个数组，兼容往返
             "depCode": params.dep,   //出发机场三字码
             "arrCode": params.arr,    //到达机场三字码
@@ -150,7 +346,7 @@ router.post('/CheckPrice', async (req, res, next) => {
                 "flightPrice": Number(startPrice.adult.flightPrice) + Number(endPrice.adult.flightPrice),
                 "fuelTax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax),
                 "airportFee": Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee),
-                "tax": Number(startPrice.adult.tax) + Number(endPrice.adult.tax)
+                "tax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax) + Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee)
             },
             "child": {
                 "printPrice": Number(startPrice.child.printPrice) + Number(endPrice.child.printPrice),
@@ -159,7 +355,7 @@ router.post('/CheckPrice', async (req, res, next) => {
                 "flightPrice": Number(startPrice.child.flightPrice) + Number(endPrice.child.flightPrice),
                 "fuelTax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax),
                 "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
-                "tax": Number(startPrice.child.tax) + Number(endPrice.child.tax)
+                "tax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax) + Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee)
             },
             "infant": {
                 "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
@@ -168,7 +364,7 @@ router.post('/CheckPrice', async (req, res, next) => {
                 "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
                 "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
                 "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
-                "tax": Number(startPrice.infant.tax) + Number(endPrice.infant.tax)
+                "tax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax) + Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee)
             }
         }
     });
@@ -282,7 +478,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
@@ -303,7 +499,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
@@ -324,7 +520,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
@@ -350,7 +546,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
@@ -371,7 +567,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
@@ -392,7 +588,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),

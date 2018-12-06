@@ -5,6 +5,17 @@ let Utils = require('../lib/utils');
 let Api = require('../lib/flight');
 let Customer = require('../model/customer');
 
+
+router.use(function (req, res, next) {
+    var url = req.originalUrl;
+    if (url.indexOf("/api/") != -1) {
+        next();
+    } else if (url != '/login' && url != '/register' && !req.session.user && url != '/login') {
+        res.redirect('/login');
+    }else{
+        next();
+    }
+});
 /* GET home page. */
 router.get('/', async (req, res, next) => {
 

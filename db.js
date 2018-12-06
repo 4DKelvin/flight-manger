@@ -39,4 +39,8 @@ module.exports = {
         certificatesNo: String,
         periodOfVali: Date
     }),
+    booking_key: mongoose.model('booking_key', {
+        name: String,
+        content: String
+    })
 };
