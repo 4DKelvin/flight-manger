@@ -55,7 +55,7 @@ module.exports = {
             })
         })
     },
-    search: function (startDate, endDate, orderNo, ticketNo, passengerName, page = 0) {
+    search: function (startDate, endDate, orderNo, ticketNo, passengerName, orderStatus, page = 0) {
         let query = plane_orders.find({groupId: {$exists: true}});
 
         if (startDate || endDate) {
@@ -88,6 +88,11 @@ module.exports = {
                     }
                 }*/
                 passengerName: new RegExp('^' + passengerName + "$", 'i')
+            });
+        }
+        if (orderStatus) {
+            query.where({
+                orderStatus: new RegExp('^' + orderStatus + '$', "i")
             });
         }
         return new Promise((resolve, reject) => {

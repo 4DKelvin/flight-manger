@@ -30,9 +30,59 @@ html.no-js.fixed-layout
         .am-offcanvas-bar.admin-offcanvas-bar
           ul.am-list.admin-sidebar-list
             li
-              a(href='/')
-                |  訂單管理
-
+              a(href='#')
+                |  国内出票订单管理
+            li
+              a(href='/?orderStatus=')
+                |  订单管理
+            li
+              a(href='/?orderStatus=订单待确认')
+                |  订单待确认
+            li
+              a(href='/?orderStatus=订单确认成功待支付')
+                |  订单确认成功待支付
+            li
+              a(href='/?orderStatus=支付成功等待出票')
+                |  支付成功等待出票
+            li
+              a(href='/?orderStatus=出票完成')
+                |  出票完成
+            li
+              a(href='/?orderStatus=出票失败')
+                |  出票失败
+            li
+              a(href='/?orderStatus=订单取消')
+                |  订单取消
+            li
+              a(href='#')
+                |  改期订单管理
+            li
+              a(href='/?orderStatus=改期申请待确认')
+                |  改期申请待确认
+            li
+              a(href='/?orderStatus=改期申请待支付')
+                |  改期申请待支付
+            li
+              a(href='/?orderStatus=支付成功待改期')
+                |  支付成功待改期
+            li
+              a(href='/?orderStatus=改期完成')
+                |  改期完成
+            li
+              a(href='/?orderStatus=拒绝改期')
+                |  拒绝改期
+            li
+              a(href='/?orderStatus=改期取消')
+                |  改期取消
+            li
+              a(href='#')
+                |  退票订单管理
+            li
+              a(href='/?orderStatus=')
+                |  退票申请中
+            li
+              a(href='/?orderStatus=')
+                |  等待重新审核
       // content start
       .admin-content
         .admin-content-body

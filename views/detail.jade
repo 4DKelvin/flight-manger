@@ -6,7 +6,8 @@ block content
         form.am-form.am-margin-left-sm(action='/takeOrder',method='get')
             fieldset
                 legend.am-text-sm 訂單編號：#{orders[0].groupId} / 下單日期：#{orders[0].date}
-                       input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='locked', id='locked')
+                       input.input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='locked', id='locked')
+                       #{status}
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tbody
                         tr
@@ -15,24 +16,23 @@ block content
                             th 航位
                             th 起降机场
                             th 起降时间
-                        tr
-                            td 去程
-                            td #{orders[0].flightNo}
-                            td #{orders[0].flightCabin}
-                            td #{orders[0].flightDeparture} -- #{orders[0].flightArrival}
-                            td #{orders[0].flightDepartureTime} -- #{orders[0].flightArrivalTime}
-                        tr
                             th  乘客类型
                             th  人数
                             th  票面价
                             th  机料/燃油
                             th  机票总价
                         tr
+                            td 去程
+                            td #{orders[0].flightNo}
+                            td #{orders[0].flightCabin}
+                            td #{orders[0].flightDeparture} -- #{orders[0].flightArrival}
+                            td #{orders[0].flightDepartureTime} -- #{orders[0].flightArrivalTime}
                             td  #{orders[0].passengerType}
                             td  1
                             td  #{orders[0].price}
                             td  #{orders[0].orderFuelTax + orders[0].orderConstructionFee}
                             td  #{orders[0].total}
+
                 hr
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tbody
@@ -42,24 +42,23 @@ block content
                             th 航位
                             th 起降机场
                             th 起降时间
-                        tr
-                            td 返程
-                            td #{orders[1].flightNo}
-                            td #{orders[1].flightCabin}
-                            td #{orders[1].flightDeparture} -- #{orders[1].flightArrival}
-                            td #{orders[1].flightDepartureTime} -- #{orders[1].flightArrivalTime}
-                        tr
                             th  乘客类型
                             th  人数
                             th  票面价
                             th  机料/燃油
                             th  机票总价
                         tr
+                            td 返程
+                            td #{orders[1].flightNo}
+                            td #{orders[1].flightCabin}
+                            td #{orders[1].flightDeparture} -- #{orders[1].flightArrival}
+                            td #{orders[1].flightDepartureTime} -- #{orders[1].flightArrivalTime}
                             td  #{orders[1].passengerType}
                             td  1
                             td  #{orders[1].price}
                             td  #{orders[1].orderFuelTax + orders[1].orderConstructionFee}
                             td  #{orders[1].total}
+
             fieldset
                 legend.am-text-sm 乘機人信息
                 table#order.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
@@ -72,6 +71,7 @@ block content
                         th   证件号
                         th   去程票号
                         th   返程票号
+                        th   操作
                     tr
                         td   1
                         td   #{orders[0].passengerType}
@@ -80,9 +80,13 @@ block content
                         td   #{orders[0].passengerIdentifyType}
                         td   #{orders[0].passengerIdentify}
                         td.ticket(order-no=orders[0].orderNo)
-                            span #{orders[0].passengerTicketNo}
+                            input(type='hidden', name='goTicketId', placeholder=' 去程票号' id='goTickerId' value=orders[0]._id)
+                            input(type='text', name='goTicket', placeholder=' 去程票号' id='goTicker' value=orders[0].passengerTicketNo)
                         td.ticket(order-no=orders[1].orderNo)
-                            span #{orders[1].passengerTicketNo}
+                            input(type='hidden', name='backTicketId', placeholder=' 去程票号' id='backTickerId' value=orders[1]._id)
+                            input(type='text', name='backTicket', placeholder=' 返程去程票号' id='backTicker' value=orders[1].passengerTicketNo)
+                        td
+                            input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='callback', value='回填票号' id="change")
             fieldset
                 legend.am-text-sm 出票工具
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
@@ -103,8 +107,8 @@ block content
                             td
                                 input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="refresh" value='刷新' id="refresh")
                                 input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付' id="pay")
-                                input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票' id="refund")
-                                input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='change', value='改簽' id="change")
+                                //input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票' id="refund")
+                                //input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='change', value='改簽' id="change")
                                 input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', id="orderNo" name='orderNo', value='#{order.orderNo}')
             fieldset
                 legend.am-text-sm 該簽退規則
@@ -117,6 +121,14 @@ block content
                         td.am-text-nowrap 成人票
                         td.am-text-nowrap 返程
                         td !{orders[1].notice}
+
+            fieldset
+                legend.am-text-sm 操作日志
+                table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
+                    - each obj in logs
+                      tr
+                        td
+                          legend.am-text-sm #{obj.dateTime} #{obj.control} 操作人：#{obj.name}
 
 
     .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
@@ -155,8 +167,12 @@ block script
             var orderNo = $("#orderNo").val();
             var orderId = parent.attr('order-id');
             var orderAgent = parent.attr('order-agent');
+            var goTickerId = $("#goTickerId").val();
+            var backTickerId = $("#backTickerId").val();
+            var goTicker = $("#goTicker").val();
+            var backTicker = $("#backTicker").val();
             var action = $(this).attr('name');
-            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId + '&flag=' + flag, function (res) {
+            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId + '&flag=' + flag + "&goTickerId=" + goTickerId + "&backTickerId=" + backTickerId + "&goTicker=" + goTicker + "&backTicker=" + backTicker, function (res) {
                 if (res.code == 200) {
                     if (res.code == '200') {
                         if (action == 'pay') {
@@ -164,6 +180,10 @@ block script
                         } else if( action == 'locked' ){
                             alert("操作成功");
                             change(res.data);
+                        } else if( action == 'callback' ){
+                            if(res.data=="success"){
+                                alert("回填成功");
+                            }
                         } else {
                             parent.find('td').eq(3).html(res.data.orderStatus);
                             $(".ticket[order-no='" + orderNo + "']").html(res.data.passengerTicketNo);

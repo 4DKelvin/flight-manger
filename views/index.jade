@@ -30,6 +30,7 @@ block content
             table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-center
                 tbody
                     tr
+                        th.am-text-center 订单类型
                         th.am-text-center 訂單編號
                         th.am-text-center 訂單狀態
                         th.am-text-center 訂單日期
@@ -37,11 +38,14 @@ block content
                         th.am-text-center(width=50) 起飞
                         th.am-text-center(width=50) 到达
                         th.am-text-center 起飞日期
+                        th.am-text-center 航班号
                         th.am-text-center 订单报价
                         th.am-text-center 操作
                     each obj,index in orders
                         if index%2==0
                             tr
+                                td.am-text-middle
+                                    span 往返
                                 td.am-text-middle
                                     span #{orders[index].groupId}
                                 td.am-text-nowrap
@@ -66,6 +70,10 @@ block content
                                     span #{orders[index].flightDepartureDateTime}
                                     br
                                     span #{orders[index+1].flightDepartureDateTime}
+                                td.am-text-nowrap
+                                    span #{orders[index].flightNo}
+                                    br
+                                    span #{orders[index + 1].flightNo}
                                 td.am-text-nowrap.am-text-middle
                                     span #{'¥ '+Number(Number(orders[index].orderTotalPrice) + Number(orders[index+1].orderTotalPrice))+'.00'}
                                 td.am-text-middle
