@@ -1,7 +1,6 @@
 let express = require('express');
 let router = express.Router();
 let Order = require('../model/order');
-let Customer = require('../model/customer');
 let Utils = require('../lib/utils');
 let Api = require('../lib/flight');
 let Customer = require('../model/customer');
