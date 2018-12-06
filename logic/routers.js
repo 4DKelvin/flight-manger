@@ -1,6 +1,7 @@
 let express = require('express');
 let router = express.Router();
 let Order = require('../model/order');
+let Customer = require('../model/customer');
 let Utils = require('../lib/utils');
 let Api = require('../lib/flight');
 let Customer = require('../model/customer');
@@ -8,6 +9,9 @@ let Customer = require('../model/customer');
 /* GET home page. */
 router.get('/', async (req, res, next) => {
 
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
     var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
 
     res.render('index', {
@@ -33,8 +37,8 @@ router.get('/', async (req, res, next) => {
 router.get('/detail', async (req, res, next) => {
 
     var flag = "0";
-    if(!req.session.user){
-        res.render('loginPage', { title: '登陆界面'});
+    if (!req.session.user) {
+        return res.redirect('/login');
     }
 
     let orders = await new Promise((resolve, reject) => {
@@ -44,17 +48,16 @@ router.get('/detail', async (req, res, next) => {
         })
     });
     var lock = orders[0].lock;
-    if(lock){
+    if (lock) {
         flag = "1";
-        if(req.session.user.name==lock){
+        if (req.session.user.name == lock) {
             flag = "2";
         }
     }
 
 
-
     res.render('detail', {
-        title: '訂單詳情', lock:flag,
+        title: '訂單詳情', lock: flag,
         orders: orders.map((order) => {
             if (order.flightArrivalTime) {
                 order.flightArrivalTime = Utils.formatDateTime(order.flightArrivalTime);
@@ -77,7 +80,7 @@ router.get('/detail', async (req, res, next) => {
             if (order.orderOriginPrice) {
                 order.price = '¥ ' + Number(order.orderOriginPrice).toFixed(2);
             }
-            return order;
+            return orders;
         })
     });
 });
@@ -144,21 +147,21 @@ router.get('/pay', async (req, res, next) => {
     }
 });
 
-router.get('/loginPage', async (req, res, next) => {
-    res.render('loginPage', { title: '登陆界面'});
+router.get('/login', async (req, res, next) => {
+    res.render('loginPage', {title: '登陆界面'});
 });
-router.post('/login', async (req, res, next) =>{
-    if(!req.body.name||!req.body.password){
+router.post('/login', async (req, res, next) => {
+    if (!req.body.name || !req.body.password) {
         Utils.renderJsonError(res, "请输入账户和密码！");
     }
-    var condition = {"name":req.body.name,"password":req.body.password}
+    var condition = {"name": req.body.name, "password": req.body.password}
     var cust = await Customer.findByCon(condition);
-    if(cust.length==1){
-        var user={
-            name:req.body.name,
-            password:req.body.password
+    if (cust.length == 1) {
+        var user = {
+            name: req.body.name,
+            password: req.body.password
         }
-        req.session.user=user;
+        req.session.user = user;
         //req.session.name = req.body.name; // 登录成功，设置 session
         var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
         res.render('index', {
@@ -179,53 +182,29 @@ router.post('/login', async (req, res, next) =>{
                 return o;
             })
         });
-    }else{
+    } else {
         Utils.renderJsonError(res, "不存在该用户！");
     }
 });
 router.get('/register', async (req, res, next) => {
-    res.render('register', { title: '注册界面'});
+    res.render('register', {title: '注册界面'});
 });
-router.post('/register', async (req, res, next) =>{
-    if(!req.body.name||!req.body.password||!req.body.sex||!req.body.certificatesNo){
+router.post('/register', async (req, res, next) => {
+    if (!req.body.name || !req.body.password || !req.body.sex || !req.body.certificatesNo) {
         Utils.renderJsonError(res, "请完善你的信息！");
     }
-    var condition = {"name":req.body.name,"password":req.body.password}
+    var condition = {"name": req.body.name, "password": req.body.password}
     var cust = await Customer.findByCon(condition);
-    console.log(cust.length);
-    if(cust.length==0){
+    if (cust.length == 0) {
         var addJson = {
             name: req.body.name,
             password: req.body.password,
-            sex:  req.body.sex,
+            sex: req.body.sex,
             certificatesNo: req.body.certificatesNo,
         };
         await Customer.insert(addJson);
-        var user={
-            name:req.body.name,
-            password:req.body.password
-        }
-        req.session.user=user;
-        var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
-        res.render('index', {
-            title: '訂單管理',
-            orders: orders.map((o) => {
-                if (o.flightDate) {
-                    o.date = Utils.formatDate(o.flightDate);
-                }
-                if (o.flightArrivalTime) {
-                    o.flightArrivalDateTime = Utils.formatDateTime(o.flightArrivalTime);
-                }
-                if (o.flightDepartureTime) {
-                    o.flightDepartureDateTime = Utils.formatDateTime(o.flightDepartureTime);
-                }
-                if (o.orderTotalPrice) {
-                    o.total = '¥ ' + Number(o.orderTotalPrice).toFixed(2);
-                }
-                return o;
-            })
-        });
-    }else{
+        res.redirect('/');
+    } else {
         Utils.renderJsonError(res, "已存在注册用户！");
     }
 });
@@ -235,18 +214,18 @@ router.get('/locked', async (req, res, next) => {
         try {
             var updateStr;
             var flag;
-            if (req.query.flag=="0"){
-                updateStr = {$set:{"lock":req.session.user.name}};
+            if (req.query.flag == "0") {
+                updateStr = {$set: {"lock": req.session.user.name}};
                 flag = "2";
             } else {
-                updateStr = {$set:{"lock":""}};
+                updateStr = {$set: {"lock": ""}};
                 flag = "0";
             }
-            var condition = {"orderNo":req.query.orderNo};
-            console.log(await Order.updateByCon(condition,updateStr));
+            var condition = {"orderNo": req.query.orderNo};
+            console.log(await Order.updateByCon(condition, updateStr));
 
-            var data = {"result":flag};
-            Utils.renderJson(res,flag);
+            var data = {"result": flag};
+            Utils.renderJson(res, flag);
 
         } catch (e) {
             Utils.renderJsonError(res, "支付失敗，原因：" + e);
@@ -255,9 +234,5 @@ router.get('/locked', async (req, res, next) => {
         Utils.renderJsonError(res, "參數錯誤");
     }
 });
-
-
-
-
 
 module.exports = router;

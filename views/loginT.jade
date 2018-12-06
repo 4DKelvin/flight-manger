@@ -1,0 +1,52 @@
+block content
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    title 用户登录
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(type='text/javascript').
+      function loginClick() {
+      var name=document.login.username.value;
+      var pwd=document.login.password.value;
+      if(name==null||name.length==0){
+      alert("用户名不能为空！");
+      return;
+      }
+      if(pwd==null||pwd.length==0){
+      alert("密码不能为空！");
+      return;
+      }
+      document.login.submit();
+      }
+  body
+    table.login_tb1
+      tbody
+        tr(valign='middle', align='center')
+          td(height='100%')
+            table.login_tb2(cellspacing='0', cellpadding='0', border='0', align='center')
+              tbody
+                tr(valign='middle')
+                  td.login_td1(colspan='2')
+                    font(size='4px', face='黑体', color='#196ed1') 用户登录
+                tr
+
+                  td.login_td2
+                    form(action='/login', name='login', method='post')
+                      table
+                        tbody
+                          tr
+                            td.login_td(width='66', height='20') 登录名：
+                            td.login_td(width='115', height='20')
+                              input.login_input(type='text', name='name')
+                            td
+                          tr
+                            td.login_td(height='20') 密 码：
+                            td.login_td(height='20')
+                              input.login_input(type='password', name='password')
+                            td
+                          tr
+                            td(colspan='2', height='20', align='center')
+                              input.login_button(type='reset', value='重置')
+                              input.login_button(type='submit', value='登录')
+                            td.login_td(width='71', align='left')
+                              a(href='registerT') 新用户注册
+
