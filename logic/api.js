@@ -6,6 +6,174 @@ let Order = require('../model/order');
 let cheerio = require('cheerio');
 
 
+router.post('/BookingOrder', async (req, res, next) => {
+    let bookings = JSON.parse(Utils.decodeBase64(req.body.bookingKey));
+    let name = req.body.passengers[0].name;
+    let identify = req.body.passengers[0].cardNum;
+    let birthday = req.body.passengers[0].birthday;
+    let sex = req.body.passengers[0].gender == 'M' ? 0 : 1;
+    let bookingStart = bookings.start;
+    let bookingEnd = bookings.end;
+    let groupId = "TAN" + new Date().getTime();
+    if (bookingStart && bookingEnd) {
+        let order = await Api.order(name, identify, birthday, sex, bookingStart);
+        let orderInfo = await Api.orderDetail(order.orderNo);
+        let arrTime = orderInfo.flightInfo[0].deptTime;
+        let totalPrice = orderInfo.passengerTypes[0].allPrices;
+        await Order.insertOrUpdate({
+            groupId: groupId,
+            orderId: order.id,
+            orderNo: orderInfo.detail.orderNo,
+            orderStatus: orderInfo.detail.status,
+            orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
+            orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+            orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
+            orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+            orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+            orderAgent: bookingStart.extInfo.clientId,
+            passengerName: orderInfo.passengers[0].name,
+            passengerType: orderInfo.passengers[0].type,
+            passengerIdentifyType: orderInfo.passengers[0].cardType,
+            passengerIdentify: orderInfo.passengers[0].cardNum,
+            passengerTicketNo: orderInfo.passengers[0].ticketNo,
+            passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
+            flightNo: orderInfo.flightInfo[0].flightNum,
+            flightDate: Date.parse(bookings.sdate),
+            flightDeparture: orderInfo.flightInfo[0].dptCity,
+            flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
+            flightDepartureTime: Date.parse(bookings.sdate + ' ' + bookings.stime),
+            flightArrival: orderInfo.flightInfo[0].arrCity,
+            flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
+            flightArrivalTime: Date.parse(bookings.sdate + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+            flightCabin: orderInfo.flightInfo[0].cabin,
+            notice: orderInfo.other.tgqMsg,
+        });
+        order = await Api.order(name, identify, birthday, sex, bookingEnd);
+        orderInfo = await Api.orderDetail(order.orderNo);
+        arrTime = orderInfo.flightInfo[0].deptTime;
+        totalPrice +=orderInfo.passengerTypes[0].allPrices;
+        await Order.insertOrUpdate({
+            groupId: groupId,
+            orderId: order.id,
+            orderNo: orderInfo.detail.orderNo,
+            orderStatus: orderInfo.detail.status,
+            orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
+            orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+            orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
+            orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+            orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+            orderAgent: bookingEnd.extInfo.clientId,
+            passengerName: orderInfo.passengers[0].name,
+            passengerType: orderInfo.passengers[0].type,
+            passengerIdentifyType: orderInfo.passengers[0].cardType,
+            passengerIdentify: orderInfo.passengers[0].cardNum,
+            passengerTicketNo: orderInfo.passengers[0].ticketNo,
+            passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
+            flightNo: orderInfo.flightInfo[0].flightNum,
+            flightDate: Date.parse(bookings.edate),
+            flightDeparture: orderInfo.flightInfo[0].dptCity,
+            flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
+            flightDepartureTime: Date.parse(bookings.edate + ' ' + bookings.etime),
+            flightArrival: orderInfo.flightInfo[0].arrCity,
+            flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
+            flightArrivalTime: Date.parse(bookings.edate + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
+            flightCabin: orderInfo.flightInfo[0].cabin,
+            notice: orderInfo.other.tgqMsg,
+        });
+        Utils.renderJson(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 0,
+                "errorMsg": null
+            },
+            "orderNo": groupId,
+            "businessOrderNo": groupId,
+            "totalPrice": totalPrice,
+            "adlPnr": "N/A",
+            "chPnr": "N/A"
+        });
+    } else {
+        Utils.renderJsonError(res, "預約失敗，票價已更新，無發預約");
+    }
+});
+
+router.post('/CheckPrice', async (req, res, next) => {
+    let params = JSON.parse(Utils.decodeBase64(req.body.verify.productId));
+    let prices = await new Promise((resolve, reject) => {
+        Promise.all([
+            singlePrice(params.sdpt, params.sarr, params.sd, params.st, params.sn),
+            singlePrice(params.edpt, params.earr, params.ed, params.et, params.en)
+        ]).then((r) => {
+            resolve(r)
+        }).catch((e) => {
+            reject(e);
+        });
+    });
+    let startPrice = prices[0];
+    let endPrice = prices[1];
+    Utils.renderApiResult(res, {
+        "version": "1.0.0",
+        "status": {
+            "code": "0",
+            "errorMsg": ""
+        },
+        "bookingKey": Utils.encodeBase64(JSON.stringify({
+            start: startPrice.booking,
+            end: endPrice.booking,
+            sdate: params.sd,
+            stime: params.st,
+            edate: params.ed,
+            etime: params.et
+        })),   //验舱验价缓存key，生单时带回
+        "avCheckResult": [{    //这里返回的是一个数组，兼容往返
+            "depCode": params.dep,   //出发机场三字码
+            "arrCode": params.arr,    //到达机场三字码
+            "date": params.sd,   //出发日期
+            "carrier": params.sn.substr(0, 2),     //航司二字码
+            "code": params.sn,   //航班号
+            "cabin": "Y",         //舱位
+            "seatCount": "A"     //剩余座位
+        }, {    //这里返回的是一个数组，兼容往返
+            "depCode": params.arr,   //出发机场三字码
+            "arrCode": params.dep,    //到达机场三字码
+            "date": params.ed,   //出发日期
+            "carrier": params.en.substr(0, 2),     //航司二字码
+            "code": params.en,   //航班号
+            "cabin": "Y",         //舱位
+            "seatCount": "A"     //剩余座位
+        }],
+        "priceResult": {
+            "adult": {
+                "printPrice": Number(startPrice.adult.printPrice) + Number(endPrice.adult.printPrice),
+                "salePrice": Number(startPrice.adult.salePrice) + Number(endPrice.adult.salePrice),
+                "discount": startPrice.adult.discount,
+                "flightPrice": Number(startPrice.adult.flightPrice) + Number(endPrice.adult.flightPrice),
+                "fuelTax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax),
+                "airportFee": Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee),
+                "tax": Number(startPrice.adult.tax) + Number(endPrice.adult.tax)
+            },
+            "child": {
+                "printPrice": Number(startPrice.child.printPrice) + Number(endPrice.child.printPrice),
+                "salePrice": Number(startPrice.child.salePrice) + Number(endPrice.child.salePrice),
+                "discount": startPrice.child.discount,
+                "flightPrice": Number(startPrice.child.flightPrice) + Number(endPrice.child.flightPrice),
+                "fuelTax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax),
+                "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
+                "tax": Number(startPrice.child.tax) + Number(endPrice.child.tax)
+            },
+            "infant": {
+                "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
+                "salePrice": Number(startPrice.infant.salePrice) + Number(endPrice.infant.salePrice),
+                "discount": startPrice.infant.discount,
+                "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
+                "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
+                "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
+                "tax": Number(startPrice.infant.tax) + Number(endPrice.infant.tax)
+            }
+        }
+    });
+});
+
 router.post('/SearchAV', async (req, res, next) => {
     let params = req.body.searchCondition.segments[0];
     let result = await Api.queryFlight(params.dep, params.arr, params.date);
@@ -135,7 +303,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
                                     "time": e.time
                                 }
                             }),
@@ -156,7 +324,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
                                     "time": e.time
                                 }
                             }),
@@ -182,7 +350,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
                                     "time": e.time
                                 }
                             }),
@@ -203,7 +371,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
                                     "time": e.time
                                 }
                             }),
@@ -224,7 +392,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "returnFee": e.returnFee,
-                                    "timeText": "起飛前" + e.time + "小時前",
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛后4小時",
                                     "time": e.time
                                 }
                             }),
@@ -244,8 +412,20 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    products[Utils.encodeBase64(start.flightNum + "_" + end.flightNum)] = {
-                        "productKey": Utils.encodeBase64(start.flightNum + "_" + end.flightNum),
+                    let productId = Utils.encodeBase64(JSON.stringify({
+                        sarr: start.arr,
+                        sdpt: start.dpt,
+                        earr: end.arr,
+                        edpt: end.dpt,
+                        st: start.dptTime,
+                        et: end.dptTime,
+                        sd: params.date,
+                        ed: params.returnDate,
+                        sn: start.flightNum,
+                        en: end.flightNum
+                    }));
+                    products[productId] = {
+                        "productKey": productId,
                         "productName": "经济仓报价",
                         "productType": 1,
                         "cabin": [startPrice.cabin[0], endPrice.cabin[0]],
@@ -295,7 +475,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 "segIndex": 1 //航段 1-第一段
                             }
                         ],
-                        "productList": [Utils.encodeBase64(start.flightNum + "_" + end.flightNum)]
+                        "productList": [productId]
                     })
                 }
             }
