@@ -1,0 +1,50 @@
+block content
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    title 用户注册
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(type='text/javascript').
+
+  body
+    table.login_tb1
+      tbody
+        tr(valign='middle', align='center')
+          td(height='100%')
+            table.login_tb2(cellspacing='0', cellpadding='0', border='0', align='center')
+              tbody
+                tr(valign='middle')
+                  td.login_td1(colspan='2')
+                    font(size='4px', face='黑体', color='#196ed1') 用户登录
+                tr
+
+                  td.login_td2
+                    form(action='/register', name='register', method='post')
+                      table
+                        tbody
+                          tr
+                            td.login_td(width='66', height='20') 用户名：
+                            td.login_td(width='115', height='20')
+                              input.login_input(type='text', name='name')
+                            td
+                          tr
+                            td.login_td(height='20') 密 码：
+                            td.login_td(height='20')
+                              input.login_input(type='password', name='password')
+                            td
+                          tr
+                            td.login_td(height='20') 性 别：
+                            td.login_td(height='20')
+                              input.login_input(type='text', name='sex')
+                            td
+                          tr
+                            td.login_td(height='20') 身份证号码：
+                            td.login_td(height='20')
+                              input.login_input(type='text', name='certificatesNo')
+                            td
+                          tr
+                            td(colspan='2', height='20', align='center')
+                              input.login_button(type='reset', value='重置')
+                              input.login_button(type='submit', value='注册')
+
+
+

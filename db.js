@@ -39,13 +39,17 @@ module.exports = {
         certificatesNo: String,
         periodOfVali: Date
     }),
-    plane_controlLog: mongoose.model('plane_controlLog',{
+    plane_controlLog: mongoose.model('plane_controlLog', {
         name: String,
-        dateTime : {
+        dateTime: {
             type: Date,
             default: Date.now
         },
         control: String,
-        orderNo : String
+        orderNo: String
     }),
+    booking_key: mongoose.model('booking_key', {
+        name: String,
+        content: String
+    })
 };
