@@ -45,19 +45,9 @@ router.get('/', async (req, res, next) => {
 router.get('/detail', async (req, res, next) => {
 
     var flag = "0";
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-
-    var conditionLog = {
-        name: req.session.user.name,
-        control: "查看详情",
-        orderNo: req.query.orderNo
-    }
-    console.log(await ControlLog.insert(conditionLog));
 
     let orders = await new Promise((resolve, reject) => {
-        Order.query().where({orderNo: req.query.orderNo}).lean().exec((err, orders) => {
+        Order.query().where({groupId: req.query.orderNo}).lean().exec((err, orders) => {
             if (err) reject(err);
             else resolve(orders);
         })
@@ -70,12 +60,15 @@ router.get('/detail', async (req, res, next) => {
         }
     }
 
+
     //获取操作日志
     var conditionLog = {orderNo:req.query.orderNo}
     var logs = await ControlLog.findByCon(conditionLog)
 
     res.render('detail', {
-        title: '訂單詳情', lock:flag, status:orders[0].orderStatus,
+        title: '訂單詳情',
+        lock:flag,
+        status:orders[0].orderStatus,
         logs:logs.map((log) => {
             if (log.dateTime) {
                 log.dateTime = Utils.formatDateTime(log.dateTime);
@@ -104,7 +97,7 @@ router.get('/detail', async (req, res, next) => {
             if (order.orderOriginPrice) {
                 order.price = '¥ ' + Number(order.orderOriginPrice).toFixed(2);
             }
-            return orders;
+            return order;
         })
     });
 });

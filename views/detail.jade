@@ -6,8 +6,8 @@ block content
         form.am-form.am-margin-left-sm(action='/takeOrder',method='get')
             fieldset
                 legend.am-text-sm 訂單編號：#{orders[0].groupId} / 下單日期：#{orders[0].date}
-                       input.input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='locked', id='locked')
-                       #{status}
+                       #locked.action.am-btn-sm.am-btn.am-btn-danger.am-fr.am-margin-left-sm 锁定订单
+                       .am-fr.am-btn-sm.am-btn.am-btn-default #{status}
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tbody
                         tr
@@ -146,10 +146,10 @@ block script
 
         function change(status){
             if (status == "2") {
-                $("#locked").val("解锁订单");
+                $("#locked").html("解锁订单");
                 flag = "2";
             } else if (status == "1") {
-                $("#locked").val("解锁订单");
+                $("#locked").html("解锁订单");
                 document.getElementById("locked").setAttribute("disabled", true);
                 $("input[name='refresh']").prop("disabled", true);
                 $("input[name='pay']").prop("disabled", true);
