@@ -26,6 +26,8 @@ block content
             hr
         .am-g
             .am-u-lg-6.am-u-md-8.am-u-sm-centered
+                if error
+                    p.am-text-danger #{error}
                 h3 注  册
                 hr
                 form.am-form(action='/register', name='register', method='post')
@@ -39,7 +41,7 @@ block content
                     input#cpassword(type='password', name='cpassword', value='')
                     br
                     label(for='certificatesNo') 身份证号:
-                    input#certificatesNo(type='password', name='certificatesNo', value='')
+                    input#certificatesNo(type='text', name='certificatesNo', value='')
                     br
                     .am-cf
                         input.am-btn.am-btn-primary.am-btn-sm.am-fl(type='submit', name='', value='注  册')

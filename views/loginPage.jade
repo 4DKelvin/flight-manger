@@ -26,6 +26,8 @@ block content
       hr
     .am-g
       .am-u-lg-6.am-u-md-8.am-u-sm-centered
+        if error
+            p.am-text-danger #{error}
         h3 登录
         hr
         form.am-form(action='/login', name='login', method='post')

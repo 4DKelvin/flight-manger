@@ -25,63 +25,68 @@ block content
                     br
                     button.am-btn.am-btn-default(type='submit') 搜索
     hr
-    .am-g
-        #orderlist.am-u-sm-12.am-scrollable-horizontal
-            table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-center
-                tbody
-                    tr
-                        th.am-text-center 订单类型
-                        th.am-text-center 訂單編號
-                        th.am-text-center 訂單狀態
-                        th.am-text-center 訂單日期
-                        th.am-text-center 乘客
-                        th.am-text-center(width=50) 起飞
-                        th.am-text-center(width=50) 到达
-                        th.am-text-center 起飞日期
-                        th.am-text-center 航班号
-                        th.am-text-center 订单报价
-                        th.am-text-center 操作
-                    each obj,index in orders
-                        if index%2==0
-                            tr
-                                td.am-text-middle
-                                    span 往返
-                                td.am-text-middle
-                                    span #{orders[index].groupId}
-                                td.am-text-nowrap
-                                    span #{orders[index].orderStatus}
-                                    br
-                                    span #{orders[index + 1].orderStatus}
-                                td.am-text-nowrap
-                                    span #{orders[index].date}
-                                    br
-                                    span #{orders[index+1].date}
-                                td.am-text-nowrap.am-text-middle
-                                    span #{orders[index].passengerName}
-                                td
-                                    span #{orders[index].flightDeparture}
-                                    br
-                                    span #{orders[index + 1].flightDeparture}
-                                td
-                                    span #{orders[index].flightArrival}
-                                    br
-                                    span #{orders[index+1].flightArrival}
-                                td.am-text-nowrap
-                                    span #{orders[index].flightDepartureDateTime}
-                                    br
-                                    span #{orders[index+1].flightDepartureDateTime}
-                                td.am-text-nowrap
-                                    span #{orders[index].flightNo}
-                                    br
-                                    span #{orders[index + 1].flightNo}
-                                td.am-text-nowrap.am-text-middle
-                                    span #{'¥ '+Number(Number(orders[index].orderTotalPrice) + Number(orders[index+1].orderTotalPrice))+'.00'}
-                                td.am-text-middle
-                                    a.am-btn.am-btn-primary.am-btn-sm(href='/detail?orderNo=' + orders[index].groupId ) 查看详情
-        .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
-        .row
+    if orders.length
+        .am-g
+            #orderlist.am-u-sm-12.am-scrollable-horizontal
+                table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-center.am-text-nowrap
+                    tbody
+                        tr
+                            th.am-text-center 订单类型
+                            th.am-text-center 訂單編號
+                            th.am-text-center 訂單狀態
+                            th.am-text-center 訂單日期
+                            th.am-text-center 乘客
+                            th.am-text-center(width=50) 起飞
+                            th.am-text-center(width=50) 到达
+                            th.am-text-center 起飞日期
+                            th.am-text-center 航班号
+                            th.am-text-center 订单报价
+                            th.am-text-center 操作
+                        each obj,index in orders
+                            if index%2==0
+                                tr
+                                    td.am-text-middle
+                                        span 往返
+                                    td.am-text-middle
+                                        span #{orders[index].groupId}
+                                    td.am-text-nowrap
+                                        span #{orders[index].orderStatus}
+                                        br
+                                        span #{orders[index + 1].orderStatus}
+                                    td.am-text-nowrap
+                                        span #{orders[index].date}
+                                        br
+                                        span #{orders[index+1].date}
+                                    td.am-text-nowrap.am-text-middle
+                                        span #{orders[index].passengerName}
+                                    td
+                                        span #{orders[index].flightDeparture}
+                                        br
+                                        span #{orders[index + 1].flightDeparture}
+                                    td
+                                        span #{orders[index].flightArrival}
+                                        br
+                                        span #{orders[index+1].flightArrival}
+                                    td.am-text-nowrap
+                                        span #{orders[index].flightDepartureDateTime}
+                                        br
+                                        span #{orders[index+1].flightDepartureDateTime}
+                                    td.am-text-nowrap
+                                        span #{orders[index].flightNo}
+                                        br
+                                        span #{orders[index + 1].flightNo}
+                                    td.am-text-nowrap.am-text-middle
+                                        span #{'¥ '+Number(Number(orders[index].orderTotalPrice) + Number(orders[index+1].orderTotalPrice))+'.00'}
+                                    td.am-text-middle
+                                        a.am-btn.am-btn-primary.am-btn-sm(href='/detail?orderNo=' + orders[index].groupId ) 查看详情
+        .am-g.row
+            hr
             .am-u-sm-12.am-margin-bottom.am-text-right
                 a.am-btn.am-btn-xs.am-btn-success.am-margin-right(href='#') 上一页
                 span.am-btn.am-btn-xs.am-btn-default.am-margin-right 第 1 页
                 a.am-btn.am-btn-xs.am-btn-success(href='#') 下一页
+    else
+        .am-alert.am-alert-success(style='display:none;') 没有任何订单记录.
+
+
 

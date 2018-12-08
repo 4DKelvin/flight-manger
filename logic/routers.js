@@ -13,26 +13,26 @@ router.use(function (req, res, next) {
         next();
     } else if (url != '/login' && url != '/register' && !req.session.user && url != '/login') {
         res.redirect('/login');
-    }else{
+    } else {
         next();
     }
 });
 /* GET home page. */
 router.get('/', async (req, res, next) => {
 
-    var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name,req.query.orderStatus,req.query.page || 0);
+    var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.orderStatus, req.query.page || 0);
 
     res.render('index', {
         title: '訂單管理',
         orders: orders.map((o) => {
             if (o.flightDate) {
-                o.date = Utils.formatDateTime(o.flightDate);
+                o.date = Utils.formatDate(o.flightDate);
             }
             if (o.flightArrivalTime) {
-                o.flightArrivalDateTime = Utils.formatDateTime(o.flightArrivalTime);
+                o.flightArrivalDateTime = Utils.formatTime(o.flightArrivalTime);
             }
             if (o.flightDepartureTime) {
-                o.flightDepartureDateTime = Utils.formatDateTime(o.flightDepartureTime);
+                o.flightDepartureDateTime = Utils.formatTime(o.flightDepartureTime);
             }
             if (o.orderTotalPrice) {
                 o.total = '¥ ' + Number(o.orderTotalPrice).toFixed(2);
@@ -62,14 +62,14 @@ router.get('/detail', async (req, res, next) => {
 
 
     //获取操作日志
-    var conditionLog = {orderNo:req.query.orderNo}
+    var conditionLog = {orderNo: req.query.orderNo}
     var logs = await ControlLog.findByCon(conditionLog)
 
     res.render('detail', {
         title: '訂單詳情',
-        lock:flag,
-        status:orders[0].orderStatus,
-        logs:logs.map((log) => {
+        lock: flag,
+        status: orders[0].orderStatus,
+        logs: logs.map((log) => {
             if (log.dateTime) {
                 log.dateTime = Utils.formatDateTime(log.dateTime);
             }
@@ -181,68 +181,52 @@ router.get('/pay', async (req, res, next) => {
 });
 
 router.get('/login', async (req, res, next) => {
-    if(req.session.user){
+    if (req.session.user) {
         res.redirect('/')
-    }else{
-        res.render('loginPage', { title: '登陆界面'});
+    } else {
+        res.render('loginPage', {title: '登陆界面'});
     }
 });
-router.post('/login', async (req, res, next) =>{
-    if(!req.body.name||!req.body.password){
-        Utils.renderJsonError(res, "请输入账户和密码！");
-    }
-    var condition = {"name": req.body.name, "password": req.body.password}
-    var cust = await Customer.findByCon(condition);
-    if (cust.length == 1) {
-        var user = {
-            name: req.body.name,
-            password: req.body.password
+router.post('/login', async (req, res, next) => {
+    if (!req.body.name || !req.body.password) {
+        res.render('loginPage', {title: '登陆界面',error:'请输入完整信息'});
+    }else{
+        if (await Customer.findByCon({"name": req.body.name, "password": req.body.password}).length>1) {
+            req.session.user = {
+                name: req.body.name,
+                password: req.body.password
+            };
+            res.redirect('/');
+        } else {
+            res.render('loginPage', {title: '登陆界面',error:'不存在该用户!'});
         }
-        req.session.user = user;
-        //req.session.name = req.body.name; // 登录成功，设置 session
-        var orders = await Order.search(req.query.start, req.query.end, req.query.orderId, req.query.tickerNo, req.query.name, req.query.page || 0);
-        res.render('index', {
-            title: '訂單管理',
-            orders: orders.map((o) => {
-                if (o.flightDate) {
-                    o.date = Utils.formatDate(o.flightDate);
-                }
-                if (o.flightArrivalTime) {
-                    o.flightArrivalDateTime = Utils.formatDateTime(o.flightArrivalTime);
-                }
-                if (o.flightDepartureTime) {
-                    o.flightDepartureDateTime = Utils.formatDateTime(o.flightDepartureTime);
-                }
-                if (o.orderTotalPrice) {
-                    o.total = '¥ ' + Number(o.orderTotalPrice).toFixed(2);
-                }
-                return o;
-            })
-        });
-    } else {
-        Utils.renderJsonError(res, "不存在该用户！");
     }
 });
 router.get('/register', async (req, res, next) => {
     res.render('register', {title: '注册界面'});
 });
 router.post('/register', async (req, res, next) => {
-    if (!req.body.name || !req.body.password || !req.body.sex || !req.body.certificatesNo) {
-        Utils.renderJsonError(res, "请完善你的信息！");
-    }
-    var condition = {"name": req.body.name, "password": req.body.password}
-    var cust = await Customer.findByCon(condition);
-    if (cust.length == 0) {
-        var addJson = {
-            name: req.body.name,
-            password: req.body.password,
-            sex: req.body.sex,
-            certificatesNo: req.body.certificatesNo,
-        };
-        await Customer.insert(addJson);
-        res.redirect('/');
-    } else {
-        Utils.renderJsonError(res, "已存在注册用户！");
+    if (!req.body.name || !req.body.password || !req.body.certificatesNo) {
+        res.render('register', {title: '注册界面', error: "请完善你的信息！"});
+    } else if(req.body.password != req.body.cpassword){
+        res.render('register', {title: '注册界面', error: "两次输入的密码不一样！"});
+    }else {
+        let condition = {"name": req.body.name, "password": req.body.password};
+        let cust = await Customer.findByCon(condition);
+        if (cust.length == 0) {
+            await Customer.insert({
+                name: req.body.name,
+                password: req.body.password,
+                certificatesNo: req.body.certificatesNo,
+            });
+            req.session.user = {
+                name: req.body.name,
+                password: req.body.password
+            };
+            res.redirect('/');
+        } else {
+            res.render('register', {title: '注册界面', error: "已存在注册用户"});
+        }
     }
 });
 
@@ -275,8 +259,8 @@ router.get('/locked', async (req, res, next) => {
             }
             console.log(await ControlLog.insert(conditionLog));
 
-            var data = {"result":flag};
-            Utils.renderJson(res,flag);
+            var data = {"result": flag};
+            Utils.renderJson(res, flag);
 
         } catch (e) {
             Utils.renderJsonError(res, "操作失败，原因：" + e);
@@ -295,24 +279,22 @@ router.get('/callback', async (req, res, next) => {
     }
     console.log(await ControlLog.insert(conditionLog));
 
-    try{
-        if (req.query.goTicker){
-            var condition = {"_id":req.query.goTickerId};
-            var updateStr = {$set:{"passengerTicketNo":req.query.goTicker}}
-            console.log(await Order.updateByCon(condition,updateStr));
+    try {
+        if (req.query.goTicker) {
+            var condition = {"_id": req.query.goTickerId};
+            var updateStr = {$set: {"passengerTicketNo": req.query.goTicker}}
+            console.log(await Order.updateByCon(condition, updateStr));
         }
-        if (req.query.backTicker){
-            var condition = {"_id":req.query.backTickerId};
-            var updateStr = {$set:{"passengerTicketNo":req.query.backTicker}}
-            console.log(await Order.updateByCon(condition,updateStr));
+        if (req.query.backTicker) {
+            var condition = {"_id": req.query.backTickerId};
+            var updateStr = {$set: {"passengerTicketNo": req.query.backTicker}}
+            console.log(await Order.updateByCon(condition, updateStr));
         }
-        Utils.renderJson(res,"success");
+        Utils.renderJson(res, "success");
     } catch (e) {
         Utils.renderJsonError(res, "回填失败，原因：" + e);
     }
 });
-
-
 
 
 module.exports = router;
