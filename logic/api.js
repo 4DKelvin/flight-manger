@@ -7,6 +7,75 @@ let Key = require('../model/key');
 let cheerio = require('cheerio');
 
 
+router.post('/NotifyTicket', async (req, res, next) => {
+    let orderNo = req.body.orderNo;
+    let status = req.body.status;
+    let amount = req.body.payAmount;
+    let orders = await groupDetail(orderNo);
+    if (orders.orderId) {
+        let total = 0;
+        let promises = [];
+        for (let date in orders.flights) {
+            total += orders.flights[date].orderTotalPrice;
+            promises.push({
+                id: orders.flights[date].orderId,
+                agent: orders.flights[date].orderAgent
+            });
+        }
+        if (Number(amount) === Number(total)) {
+            if (Number(status) === 1) {
+                try {
+                    let res = await Promise.all(promises.map((e) => {
+                        return Api.pay(e.id, e.agent);
+                    }));
+                    Utils.renderApiResult(res, {
+                        "version": "1.0.0", //版本号
+                        "status": {
+                            "code": "0", //状态码 0-成功  非0-失败
+                            "errorMsg": "" //失败具体原因
+                        },
+                        "orderNo": orderNo, //订单号
+                    });
+                } catch (e) {
+                    Utils.renderApiResult(res, {
+                        "version": "1.0.0", //版本号
+                        "status": {
+                            "code": "1006", //状态码 0-成功  非0-失败
+                            "errorMsg": "支付失败" //失败具体原因
+                        },
+                        "orderNo": orderNo, //订单号
+                    });
+                }
+            } else {
+                Utils.renderApiResult(res, {
+                    "version": "1.0.0", //版本号
+                    "status": {
+                        "code": 1005, //状态码 0-成功  非0-失败
+                        "errorMsg": "订单未支付" //失败具体原因
+                    }
+                })
+            }
+        } else {
+            Utils.renderApiResult(res, {
+                "version": "1.0.0", //版本号
+                "status": {
+                    "code": 1003, //状态码 0-成功  非0-失败
+                    "errorMsg": "支付价格不一致" //失败具体原因
+                }
+            })
+        }
+    } else {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": 1004, //状态码 0-成功  非0-失败
+                "errorMsg": "找不到此订单" //失败具体原因
+            }
+        })
+    }
+
+});
+
 router.post('/CheckPay', async (req, res, next) => {
     try {
         let orders = await new Promise((resolve, reject) => {
@@ -1088,9 +1157,9 @@ async function groupDetail(groupId) {
         flights: {}
     };
     orders.forEach((order) => {
-        delete order.groupId;
-        delete order.orderId;
-        delete order.orderNo;
+        // delete order.groupId;
+        // delete order.orderId;
+        // delete order.orderNo;
         order.id = groupId + order._id.toString().toUpperCase();
         delete order._id;
         res.flights[Utils.formatDate(order.flightDate)] = order;
