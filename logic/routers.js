@@ -189,16 +189,17 @@ router.get('/login', async (req, res, next) => {
 });
 router.post('/login', async (req, res, next) => {
     if (!req.body.name || !req.body.password) {
-        res.render('loginPage', {title: '登陆界面',error:'请输入完整信息'});
-    }else{
-        if (await Customer.findByCon({"name": req.body.name, "password": req.body.password}).length>1) {
+        res.render('loginPage', {title: '登陆界面', error: '请输入完整信息'});
+    } else {
+        let users = await Customer.findByCon({"name": req.body.name, "password": req.body.password})
+        if (users.length === 0) {
             req.session.user = {
                 name: req.body.name,
                 password: req.body.password
             };
             res.redirect('/');
         } else {
-            res.render('loginPage', {title: '登陆界面',error:'不存在该用户!'});
+            res.render('loginPage', {title: '登陆界面', error: '不存在该用户!'});
         }
     }
 });
@@ -208,9 +209,9 @@ router.get('/register', async (req, res, next) => {
 router.post('/register', async (req, res, next) => {
     if (!req.body.name || !req.body.password || !req.body.certificatesNo) {
         res.render('register', {title: '注册界面', error: "请完善你的信息！"});
-    } else if(req.body.password != req.body.cpassword){
+    } else if (req.body.password != req.body.cpassword) {
         res.render('register', {title: '注册界面', error: "两次输入的密码不一样！"});
-    }else {
+    } else {
         let condition = {"name": req.body.name, "password": req.body.password};
         let cust = await Customer.findByCon(condition);
         if (cust.length == 0) {
