@@ -78,7 +78,7 @@ block content
                                     td.am-text-nowrap.am-text-middle
                                         span #{'¥ '+Number(Number(orders[index].orderTotalPrice) + Number(orders[index+1].orderTotalPrice))+'.00'}
                                     td.am-text-middle
-                                        a.am-btn.am-btn-primary.am-btn-sm(href='/detail?orderNo=' + orders[index].groupId ) 查看详情
+                                        a.am-btn.am-btn-primary.am-btn-sm(href='/detail?orderNo=' + orders[index].orderNo ) 查看详情
         .am-g.row
             hr
             .am-u-sm-12.am-margin-bottom.am-text-right

@@ -1,0 +1,54 @@
+block content
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    title 改签功能
+    link(rel='stylesheet', href='http://amazeui.org/css/amazeui.min.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+
+    style.
+      .header {
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 200%;
+        color: #333;
+        margin-top: 30px;
+      }
+
+      .header p {
+        font-size: 14px;
+      }
+  body
+    .header
+      .am-g
+        h1 机票订单改签管理
+      hr
+    .am-g
+      .am-u-lg-6.am-u-md-8.am-u-sm-centered
+        if error
+            p.am-text-danger #{error}
+        h3 改签
+        hr
+        form.am-form(action='/', name='redo', method='get' id='redo')
+          td.login_td(width='66', height='20') 改签日期
+            td.login_td(width='115', height='20')
+              input.login_input(type='text', name='name')
+          br
+          td.login_td(width='115', height='20')
+            input.login_input(type='button', name='name' value='显示改签费用')
+            input.login_input(type='text', name='price' readonly='readonly' id='price')
+          br
+          .am-cf
+            input.am-btn.am-btn-primary.am-btn-sm.am-fl(type='button', name='', value='支  付' onclick='pay()')
+            input.am-btn.am-btn-primary.am-btn-sm.am-fl(type='hidden', id='orderNo', value='#{orderNo}')
+        hr
+
+block script
+    script(type='text/javascript').
+
+        function pay() {
+            document.getElementById("redo").submit();
+            window.opener.location.reload();
+            window.close();
+        }

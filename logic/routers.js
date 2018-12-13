@@ -47,11 +47,12 @@ router.get('/detail', async (req, res, next) => {
     var flag = "0";
 
     let orders = await new Promise((resolve, reject) => {
-        Order.query().where({groupId: req.query.orderNo}).lean().exec((err, orders) => {
+        Order.query().where({orderNo: req.query.orderNo}).lean().exec((err, orders) => {
             if (err) reject(err);
             else resolve(orders);
         })
     });
+
     var lock = orders[0].lock;
     if (lock) {
         flag = "1";
@@ -192,7 +193,7 @@ router.post('/login', async (req, res, next) => {
         res.render('loginPage', {title: '登陆界面', error: '请输入完整信息'});
     } else {
         let users = await Customer.findByCon({"name": req.body.name, "password": req.body.password})
-        if (users.length === 0) {
+        if (users.length === 1) {
             req.session.user = {
                 name: req.body.name,
                 password: req.body.password
@@ -233,7 +234,7 @@ router.post('/register', async (req, res, next) => {
 
 router.get('/locked', async (req, res, next) => {
 
-    console.log(await ControlLog.insert(conditionLog));
+    //console.log(await ControlLog.insert(conditionLog));
     var control = "";
 
     if (req.query.flag && req.query.orderNo) {
@@ -295,6 +296,9 @@ router.get('/callback', async (req, res, next) => {
     } catch (e) {
         Utils.renderJsonError(res, "回填失败，原因：" + e);
     }
+});
+router.get('/endoPage', async (req, res, next) => {
+    res.render('endo', {title: '注册界面',orderNo:req.query.orderNo});
 });
 
 
