@@ -169,24 +169,24 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "depAirportCode": o.flightDeparture, //出发机场三字码
                 "arrAirportCode": o.flightArrival, //到达机场三字码
                 "departureDate": Utils.formatDate(o.flightDate), //出发日期
-                "departureTime": Utils.formatDateTime(o.flightDepartureTime), //出发时间
+                "departureTime": Utils.formatTime(o.flightDepartureTime), //出发时间
                 "arrivalDate": Utils.formatDate(o.flightDate), //到达日期
-                "arrivalTime": Utils.formatDateTime(o.flightArrivalTime), //到达时间
-                // "depTerminal": "", //出发航站楼,可空
-                // "arrTerminal": "", //到达航站楼,可空
-                // "depAirport": "北京首都国际机场", //起飞机场名称
-                // "arrAirport": "上海虹桥国际机场", //到达机场名称
-                // "flightTime": "", //飞行时间,可空
-                // "actFlightNum": "", //实际承运航班号,可空
+                "arrivalTime": Utils.formatTime(o.flightArrivalTime), //到达时间
+                "depTerminal": "", //出发航站楼,可空
+                "arrTerminal": "", //到达航站楼,可空
+                "depAirport": "北京首都国际机场", //起飞机场名称
+                "arrAirport": "上海虹桥国际机场", //到达机场名称
+                "flightTime": "", //飞行时间,可空
+                "actFlightNum": "", //实际承运航班号,可空
                 "codeShare": false, //是否共享航班,可空
                 "meal": true, //餐食
-                // "correct": "", //准点率,可空
+                "correct": "", //准点率,可空
                 "airCompany": "中国东方航空", //航司名称
-                // "depCity": "", //出发城市,可空
-                // "arrCity": "", //到达城市,可空
-                // "depCityCode": "", //出发城市码,可空
-                // "arrCityCode": "", //到达城市码,可空
-                // "crossDays": "",
+                "depCity": "", //出发城市,可空
+                "arrCity": "", //到达城市,可空
+                "depCityCode": o.flightDeparture, //出发城市码,可空
+                "arrCityCode": o.flightArrival, //到达城市码,可空
+                "crossDays": "",
                 "stopInfos": null,
                 // "actCarrier": "", //实际承运人为空表示就是销售承运人,可空
                 "segmentType": 1, //航段类型0单程
@@ -541,6 +541,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "dataExt": {}
                         }
                     }
+
                     rules[startPrice.tgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId] = {
                         "adult": {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
@@ -704,7 +705,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "flightPrice": Number(startPrice.adult.flightPrice) + Number(endPrice.adult.flightPrice),
                             "fuelTax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax),
                             "airportFee": Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee),
-                            "tax": Number(startPrice.adult.tax) + Number(endPrice.adult.tax)
+                            "tax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax) + Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee)
                         },
                         "child": {
                             "printPrice": Number(startPrice.child.printPrice) + Number(endPrice.child.printPrice),
@@ -713,7 +714,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "flightPrice": Number(startPrice.child.flightPrice) + Number(endPrice.child.flightPrice),
                             "fuelTax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax),
                             "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
-                            "tax": Number(startPrice.child.tax) + Number(endPrice.child.tax)
+                            "tax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax) + Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee)
                         },
                         "infant": {
                             "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
@@ -722,7 +723,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
                             "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
                             "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
-                            "tax": Number(startPrice.infant.tax) + Number(endPrice.infant.tax)
+                            "tax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax) + Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee)
                         },
                         "tgqRuleId": startPrice.tgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId, //退改签key，对应tgqRules
                         "backTgqRuleId": startPrice.backTgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.backTgqRuleId //往返回程退改签key 对应tgqRules
