@@ -1081,7 +1081,7 @@ router.post('/booking', async (req, res, next) => {
                     passengerName: orderInfo.passengers[0].name,
                     passengerType: orderInfo.passengers[0].type,
                     passengerIdentifyType: orderInfo.passengers[0].cardType,
-                    passengerIdentify: orderInfo.passengers[0].cardNum,
+                    passengerIdentify: identify,
                     passengerTicketNo: orderInfo.passengers[0].ticketNo,
                     passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                     flightNo: orderInfo.flightInfo[0].flightNum,
