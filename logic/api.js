@@ -205,7 +205,7 @@ router.post('/OrderInfo', async (req, res, next) => {
                     "ticketNo": p.ticketNo, //票号
                 }] : [],
                 "cardType": "NI", //证件类型，NI：身份证，PP：护照，OT：其他
-                "cardNum": p.cardNum, //证件号码
+                "cardNum": orders[0].passengerIdentify, //证件号码
                 "cardExpired": null, //证件过期时间
                 "cardIssuePlace": null,
                 "mobCountryCode": 86
