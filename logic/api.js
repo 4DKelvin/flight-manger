@@ -25,9 +25,9 @@ router.post('/NotifyTicket', async (req, res, next) => {
         if (Number(amount) === Number(total)) {
             if (Number(status) === 1) {
                 try {
-                    let res = await Promise.all(promises.map((e) => {
-                        return Api.pay(e.id, e.agent);
-                    }));
+                    for (let i = 0; i < promises.length; i++) {
+                        await Api.pay(promises[i].id, promises[i].agent);
+                    }
                     Utils.renderApiResult(res, {
                         "version": "1.0.0", //版本号
                         "status": {
