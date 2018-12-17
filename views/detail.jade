@@ -6,7 +6,7 @@ block content
         form.am-form.am-margin-left-sm(action='/takeOrder',method='get')
             fieldset
                 legend.am-text-sm 訂單編號：#{orders[0].groupId} / 下單日期：#{orders[0].date}
-                       #locked.action.am-btn-sm.am-btn.am-btn-danger.am-fr.am-margin-left-sm 锁定订单
+                       #locked.action.am-btn-sm.am-btn.am-btn-danger.am-fr.am-margin-left-sm(type='button', name="locked")
                        .am-fr.am-btn-sm.am-btn.am-btn-default #{status}
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
                     tbody
@@ -108,7 +108,7 @@ block content
                                 input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="refresh" value='刷新' id="refresh")
                                 input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付' id="pay")
                                 //input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票' id="refund")
-                                //input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='change', value='改簽' id="change")
+                                input.am-btn-sm.am-btn.am-btn-primary(type='button', name='endorse', value='改簽' id="endorse" onclick='endo()')
                                 input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', id="orderNo" name='orderNo', value='#{order.orderNo}')
             fieldset
                 legend.am-text-sm 該簽退規則
@@ -141,6 +141,11 @@ block script
         var flag = "";
 
         $(document).ready(function (){
+            var passengerTicketNo = #{orders[0].passengerTicketNo}+"" ;
+            if(passengerTicketNo!=null&&passengerTicketNo!=""){
+                $("input[name='callback']").prop("disabled", true);
+            }
+
             change(#{lock});
         });
 
@@ -156,10 +161,14 @@ block script
                 $("input[name='refund']").prop("disabled", true);
                 $("input[name='change']").prop("disabled", true);
             } else {
-                $("#locked").val("锁定订单");
+                $("#locked").html("锁定订单");
                 flag = "0";
             }
-        }
+        };
+
+        function endo(){
+            window.open("/endoPage?orderNo="+$("#orderNo").val(),"改签","fullscreen=1,width=600,height=500,top=70%,left=80%");
+        };
 
         $(document).on('click', '.action', function (e) {
             e.preventDefault();
@@ -182,6 +191,7 @@ block script
                             change(res.data);
                         } else if( action == 'callback' ){
                             if(res.data=="success"){
+                                $("input[name='callback']").prop("disabled", true);
                                 alert("回填成功");
                             }
                         } else {
