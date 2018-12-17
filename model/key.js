@@ -17,8 +17,12 @@ module.exports = {
     get: function (key) {
         return new Promise(function (resolve, reject) {
             keys.findOne({name: key}).lean().exec(function (err, data) {
-                if (err) reject(err);
-                else resolve(data.content);
+                try {
+                    if (err) reject(err);
+                    else resolve(data.content);
+                } catch (e) {
+                    reject(e);
+                }
             })
         })
     }
