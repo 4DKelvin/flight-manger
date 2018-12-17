@@ -4,6 +4,13 @@ block content
     title 改签功能
     link(rel='stylesheet', href='http://amazeui.org/css/amazeui.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/amazeui.datetimepicker.css')
+
+    link(rel='stylesheet', href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css')
+    script(src='//code.jquery.com/jquery-1.9.1.js')
+    script(src='//code.jquery.com/ui/1.10.4/jquery-ui.js')
+    script(src='/js/amazeui.datetimepicker.min.js')
+    link(rel='stylesheet', href='http://jqueryui.com/resources/demos/style.css')
 
     style.
       .header {
@@ -32,23 +39,51 @@ block content
         hr
         form.am-form(action='/', name='redo', method='get' id='redo')
           td.login_td(width='66', height='20') 改签日期
-            td.login_td(width='115', height='20')
-              input.login_input(type='text', name='name')
+            td.login_td(width='115', height='20' name='date' id='date' )
+              input#redoTime(type='dateTime')
           br
           td.login_td(width='115', height='20')
-            input.login_input(type='button', name='name' value='显示改签费用')
-            input.login_input(type='text', name='price' readonly='readonly' id='price')
+            input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="showPrice" value='显示改签价格' id="showRedoPrice")
+            input(type='text', name='price' readonly='readonly' id='price' value="")
           br
           .am-cf
-            input.am-btn.am-btn-primary.am-btn-sm.am-fl(type='button', name='', value='支  付' onclick='pay()')
+            input.action.am-btn-sm.am-btn.am-btn-default(type='button', name="redoPay" value='支付' id="redoPay")
             input.am-btn.am-btn-primary.am-btn-sm.am-fl(type='hidden', id='orderNo', value='#{orderNo}')
         hr
 
 block script
     script(type='text/javascript').
 
-        function pay() {
-            document.getElementById("redo").submit();
-            window.opener.location.reload();
-            window.close();
-        }
+        $(document).ready(function () {
+
+        });
+
+        $(function () {
+            $('#redoTime').datetimepicker({
+                format: 'yyyy-mm-dd hh:ii:ss'
+            });
+        });
+
+        $(document).on('click', '.action', function (e) {
+            e.preventDefault();
+            var parent = $(this).parents('tr');
+            var orderNo = $("#orderNo").val();
+            var redoTime = $("#redoTime").val();
+            var action = $(this).attr('name');
+            $.get('/' + action + '?orderNo=' + orderNo + "&date=" + redoTime + "&price=" + price, function (res) {
+                if (res.code == 200) {
+                    if (res.code == '200') {
+                        if (action == 'showPrice') {
+                            alert("查询改签金额成功")
+                            $("#price").val(res.data);
+                        } else {
+                            alert("支付成功")
+                            window.opener.location.reload();
+                            window.close();
+                        }
+                    }
+                } else {
+                    alert(res.msg)
+                }
+            })
+        });

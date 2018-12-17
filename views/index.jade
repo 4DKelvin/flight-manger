@@ -1,6 +1,9 @@
 extends layout
 
 block content
+  head
+
+  body
     .am-g
         form.am-form(action='/',method='get')
             .am-cf.am-margin-top-xs
@@ -41,6 +44,7 @@ block content
                             th.am-text-center 起飞日期
                             th.am-text-center 航班号
                             th.am-text-center 订单报价
+                            th.am-text-center 锁定人
                             th.am-text-center 操作
                         each obj,index in orders
                             if index%2==0
@@ -78,7 +82,9 @@ block content
                                     td.am-text-nowrap.am-text-middle
                                         span #{'¥ '+Number(Number(orders[index].orderTotalPrice) + Number(orders[index+1].orderTotalPrice))+'.00'}
                                     td.am-text-middle
-                                        a.am-btn.am-btn-primary.am-btn-sm(href='/detail?orderNo=' + orders[index].orderNo ) 查看详情
+                                        span #{orders[index].lock}
+                                    td.am-text-middle
+                                        a.am-btn.am-btn-primary.am-btn-sm(href='/detail?groupId=' + orders[index].groupId ) 查看详情
         .am-g.row
             hr
             .am-u-sm-12.am-margin-bottom.am-text-right
