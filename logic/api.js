@@ -166,16 +166,16 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "cabin": o.flightCabin, //舱位
                 "childCabin": "Y", //儿童舱位
                 "planeModule": "波音737(中)", //机型
-                "depAirportCode": o.flightDeparture, //出发机场三字码
-                "arrAirportCode": o.flightArrival, //到达机场三字码
+                "depAirportCode": o.flightDepartureCode, //出发机场三字码
+                "arrAirportCode": o.flightArrivalCode, //到达机场三字码
                 "departureDate": Utils.formatDate(o.flightDate), //出发日期
                 "departureTime": Utils.formatTime(o.flightDepartureTime), //出发时间
                 "arrivalDate": Utils.formatDate(o.flightDate), //到达日期
                 "arrivalTime": Utils.formatTime(o.flightArrivalTime), //到达时间
                 "depTerminal": "", //出发航站楼,可空
                 "arrTerminal": "", //到达航站楼,可空
-                "depAirport": "北京首都国际机场", //起飞机场名称
-                "arrAirport": "上海虹桥国际机场", //到达机场名称
+                "depAirport": o.flightDeparture, //起飞机场名称
+                "arrAirport": o.flightArrival, //到达机场名称
                 "flightTime": "", //飞行时间,可空
                 "actFlightNum": "", //实际承运航班号,可空
                 "codeShare": false, //是否共享航班,可空
@@ -441,8 +441,20 @@ router.post('/CheckPrice', async (req, res, next) => {
 
 router.post('/SearchAV', async (req, res, next) => {
     let params = req.body.searchCondition.segments[0];
-    let result = await Api.queryFlight(params.dep, params.arr, params.date);
-    let result2 = await Api.queryFlight(params.arr, params.dep, params.returnDate);
+    let result, result2;
+    try {
+        result = await Api.queryFlight(params.dep, params.arr, params.date);
+        result2 = await Api.queryFlight(params.arr, params.dep, params.returnDate);
+    } catch (e) {
+        return Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": "4002", //状态码 0-成功  非0-失败
+                "errorMsg": e //失败具体原因
+            },
+            "search": null
+        });
+    }
     let flightProductGroup = [];
     let flights = {};
     let products = {};
