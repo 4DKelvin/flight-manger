@@ -256,6 +256,7 @@ router.post('/BookingOrder', async (req, res, next) => {
     let bookingStart = bookings.start;
     let bookingEnd = bookings.end;
     let groupId = "TAN" + new Date().getTime();
+    console.log(identify);
     try {
         if (bookingStart && bookingEnd) {
             let order = await Api.order(name, identify, birthday, sex, bookingStart);
