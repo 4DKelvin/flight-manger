@@ -41,7 +41,7 @@ router.post('/NotifyTicket', async (req, res, next) => {
                         "version": "1.0.0", //版本号
                         "status": {
                             "code": "1006", //状态码 0-成功  非0-失败
-                            "errorMsg": "支付失败" //失败具体原因
+                            "errorMsg": e//失败具体原因
                         },
                         "orderNo": orderNo, //订单号
                     });
@@ -279,7 +279,7 @@ router.post('/BookingOrder', async (req, res, next) => {
                 passengerName: orderInfo.passengers[0].name,
                 passengerType: orderInfo.passengers[0].type,
                 passengerIdentifyType: orderInfo.passengers[0].cardType,
-                passengerIdentify: orderInfo.passengers[0].cardNum,
+                passengerIdentify: identify,
                 passengerTicketNo: orderInfo.passengers[0].ticketNo,
                 passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                 flightNo: orderInfo.flightInfo[0].flightNum,
@@ -314,7 +314,7 @@ router.post('/BookingOrder', async (req, res, next) => {
                 passengerName: orderInfo.passengers[0].name,
                 passengerType: orderInfo.passengers[0].type,
                 passengerIdentifyType: orderInfo.passengers[0].cardType,
-                passengerIdentify: orderInfo.passengers[0].cardNum,
+                passengerIdentify: identify,
                 passengerTicketNo: orderInfo.passengers[0].ticketNo,
                 passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                 flightNo: orderInfo.flightInfo[0].flightNum,
@@ -1050,7 +1050,7 @@ router.post('/booking', async (req, res, next) => {
                     passengerName: orderInfo.passengers[0].name,
                     passengerType: orderInfo.passengers[0].type,
                     passengerIdentifyType: orderInfo.passengers[0].cardType,
-                    passengerIdentify: orderInfo.passengers[0].cardNum,
+                    passengerIdentify: identify,
                     passengerTicketNo: orderInfo.passengers[0].ticketNo,
                     passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                     flightNo: orderInfo.flightInfo[0].flightNum,
