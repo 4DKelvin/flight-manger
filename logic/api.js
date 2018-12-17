@@ -248,7 +248,19 @@ router.post('/OrderInfo', async (req, res, next) => {
 });
 
 router.post('/BookingOrder', async (req, res, next) => {
-    let bookings = JSON.parse(Utils.decodeBase64(await Key.get(req.body.bookingKey)));
+    let bookings;
+    try {
+        bookings = JSON.parse(Utils.decodeBase64(await Key.get(req.body.bookingKey)));
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 1012,
+                "errorMsg": "bookingKey 找不到"
+            }
+        });
+    }
+
     let name = req.body.passengers[0].name;
     let identify = req.body.passengers[0].cardNum;
     let birthday = req.body.passengers[0].birthday;
