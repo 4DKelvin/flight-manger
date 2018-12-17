@@ -174,18 +174,18 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "arrivalTime": Utils.formatTime(o.flightArrivalTime), //到达时间
                 "depTerminal": "", //出发航站楼,可空
                 "arrTerminal": "", //到达航站楼,可空
-                "depAirport": o.flightDeparture, //起飞机场名称
-                "arrAirport": o.flightArrival, //到达机场名称
+                "depAirport": "", //起飞机场名称
+                "arrAirport": "", //到达机场名称
                 "flightTime": "", //飞行时间,可空
                 "actFlightNum": "", //实际承运航班号,可空
                 "codeShare": false, //是否共享航班,可空
                 "meal": true, //餐食
                 "correct": "", //准点率,可空
                 "airCompany": "中国东方航空", //航司名称
-                "depCity": "", //出发城市,可空
-                "arrCity": "", //到达城市,可空
-                "depCityCode": o.flightDepartureCode, //出发城市码,可空
-                "arrCityCode": o.flightArrivalCode, //到达城市码,可空
+                "depCity": o.flightDeparture, //出发城市,可空
+                "arrCity": o.flightArrival, //到达城市,可空
+                "depCityCode": "", //出发城市码,可空
+                "arrCityCode": "", //到达城市码,可空
                 "crossDays": "",
                 "stopInfos": null,
                 // "actCarrier": "", //实际承运人为空表示就是销售承运人,可空
