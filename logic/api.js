@@ -184,8 +184,8 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "airCompany": "中国东方航空", //航司名称
                 "depCity": "", //出发城市,可空
                 "arrCity": "", //到达城市,可空
-                "depCityCode": o.flightDeparture, //出发城市码,可空
-                "arrCityCode": o.flightArrival, //到达城市码,可空
+                "depCityCode": o.flightDepartureCode, //出发城市码,可空
+                "arrCityCode": o.flightArrivalCode, //到达城市码,可空
                 "crossDays": "",
                 "stopInfos": null,
                 // "actCarrier": "", //实际承运人为空表示就是销售承运人,可空
