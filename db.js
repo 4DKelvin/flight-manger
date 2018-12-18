@@ -35,6 +35,7 @@ module.exports = {
     plane_customer: mongoose.model('plane_customer', {
         name: String,
         sex: String,
+        password: String,
         certificatesType: String,
         certificatesNo: String,
         periodOfVali: Date
