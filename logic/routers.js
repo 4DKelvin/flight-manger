@@ -193,15 +193,15 @@ router.post('/login', async (req, res, next) => {
         res.render('loginPage', {title: '登陆界面', error: '请输入完整信息'});
     } else {
         let users = await Customer.findByCon({"name": req.body.name, "password": req.body.password})
-        console.log(req.body,users);
+        console.log(req.body, users);
         if (users.length) {
             req.session.user = {
                 name: req.body.name,
                 password: req.body.password
             };
-            res.redirect('/');
+            return res.redirect('/');
         } else {
-            res.render('loginPage', {title: '登陆界面', error: '不存在该用户!'});
+            return res.render('loginPage', {title: '登陆界面', error: '不存在该用户!'});
         }
     }
 });
@@ -226,9 +226,9 @@ router.post('/register', async (req, res, next) => {
                 name: req.body.name,
                 password: req.body.password
             };
-            res.redirect('/');
+            return res.redirect('/');
         } else {
-            res.render('register', {title: '注册界面', error: "已存在注册用户"});
+            return res.render('register', {title: '注册界面', error: "已存在注册用户"});
         }
     }
 });
@@ -299,7 +299,7 @@ router.get('/callback', async (req, res, next) => {
     }
 });
 router.get('/endoPage', async (req, res, next) => {
-    res.render('endo', {title: '注册界面',orderNo:req.query.orderNo});
+    res.render('endo', {title: '注册界面', orderNo: req.query.orderNo});
 });
 
 
