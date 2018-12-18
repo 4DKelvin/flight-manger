@@ -47,12 +47,14 @@ router.get('/detail', async (req, res, next) => {
     var flag = "0";
 
     let orders = await new Promise((resolve, reject) => {
-        Order.query().where({orderNo: req.query.orderNo}).lean().exec((err, orders) => {
+        Order.query().where({groupId: req.query.orderNo}).lean().exec((err, orders) => {
             if (err) reject(err);
             else resolve(orders);
         })
     });
-
+    if (!orders.length) {
+        return next();
+    }
     var lock = orders[0].lock;
     if (lock) {
         flag = "1";
