@@ -193,7 +193,7 @@ router.post('/login', async (req, res, next) => {
         res.render('loginPage', {title: '登陆界面', error: '请输入完整信息'});
     } else {
         let users = await Customer.findByCon({"name": req.body.name, "password": req.body.password})
-        if (users.length === 1) {
+        if (users.length) {
             req.session.user = {
                 name: req.body.name,
                 password: req.body.password

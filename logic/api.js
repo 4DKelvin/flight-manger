@@ -7,6 +7,162 @@ let Key = require('../model/key');
 let cheerio = require('cheerio');
 
 
+router.post('/RefundSearch', async (req, res, next) => {
+    try {
+        let orderNo = req.body.orderNo;
+        let orders = await groupDetail(orderNo);
+        let os = [];
+        if (orders.orderId) {
+            for (let date in orders.flights) {
+                os.push(orders.flights[date]);
+            }
+        }
+        let reasons = await Promise.all(os.map((o) => {
+            return Api.refundReasons(o.orderNo);
+        }));
+
+        Utils.renderApiResult(res, {
+            "test": reasons,
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": "0", //状态码 0-成功  非0-失败
+                "errorMsg": "" //失败具体原因
+            },
+            "businessOrderNo":  orderNo, //业务单号,
+            "orderNo": orderNo,
+            "refundAmount": "123.00", //退票金额
+            "refundFee": "20.00", //退票手续费
+            "passengers": [{
+                "name": os[0].passengerName,//乘机人姓名
+                "cardType": "PP",////证件类型，NI：身份证，PP：护照，OT：其他
+                "cardNum": os[0].passengerIdentify,//证件号码
+                "ticketNo": os[0].passengerInsuranceNo,//票号
+                "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                "mobCountryCode": "86",
+                "pasId": "1",//乘机人id
+                "applyType": 1, //参见退票类型说明
+                "tickets": os.map((o, i) => {
+                    return {
+                        "ticketNo": o.passengerTicketNo, //票号
+                        "segmentIndex": {
+                            "flightNum": o.flightNo, //出票航段航班号
+                            "segmentType": 1, //出票航程索引
+                            "sequenceNum": i + 1//出票航段索引
+                        }
+                    }
+                }),
+                "flights": os.map((o, i) => {
+                    return {
+                        "flightNum": o.flightNo,
+                        "cabin": "Y",
+                        "childCabin": "Y",
+                        "depCityCode": o.flightDepartureCode,
+                        "arrCityCode": o.flightArrivalCode,
+                        "depCity": "",
+                        "arrCity": "",
+                        "depAirportCode": "",
+                        "arrAirportCode": "",
+                        "depAirport": "",
+                        "arrAirport": "",
+                        "departureDate": Utils.formatDate(o.flightDate),
+                        "departureTime": Utils.formatTime(o.flightDepartureTime),
+                        "arrivalDate": Utils.formatDate(o.flightDate),
+                        "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                        "segmentType": 1,
+                        "sequenceNum": i + 1,
+                        "price": o.orderTotalPrice,
+                        "airprotTax": o.orderFuelTax
+                    }
+                })
+            }]
+        });
+    } catch (e) {
+        console.log(e);
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": 10015, //状态码 0-成功  非0-失败
+                "errorMsg": "订单没找到" //失败具体原因
+            }
+        })
+    }
+});
+
+router.post('/ApplyRefund', async (req, res, next) => {
+    try {
+        let orderNo = req.body.orderNo;
+        let orders = await groupDetail(orderNo);
+        let os = [];
+        if (orders.orderId) {
+            for (let date in orders.flights) {
+                os.push(orders.flights[date]);
+            }
+        }
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 0,
+                "errorMsg": null
+            },
+            "orderNo": orderNo,
+            "businessOrderNo": orderNo,
+            "passengers": [
+                {
+                    "name": os[0].passengerName,//乘机人姓名
+                    "cardType": "PP",////证件类型，NI：身份证，PP：护照，OT：其他
+                    "cardNum": os[0].passengerIdentify,//证件号码
+                    "ticketNo": os[0].passengerInsuranceNo,//票号
+                    "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                    "mobCountryCode": "86",
+                    "pasId": "1",//乘机人id
+                    "applyType": 1, //参见退票类型说明
+                    "tickets": os.map((o, i) => {
+                        return {
+                            "ticketNo": o.passengerTicketNo, //票号
+                            "segmentIndex": {
+                                "flightNum": o.flightNo, //出票航段航班号
+                                "segmentType": 1, //出票航程索引
+                                "sequenceNum": i + 1//出票航段索引
+                            }
+                        }
+                    }),
+                    "flights": os.map((o, i) => {
+                        return {
+                            "flightNum": o.flightNo,
+                            "cabin": "Y",
+                            "childCabin": "Y",
+                            "depCityCode": o.flightDepartureCode,
+                            "arrCityCode": o.flightArrivalCode,
+                            "depCity": "",
+                            "arrCity": "",
+                            "depAirportCode": "",
+                            "arrAirportCode": "",
+                            "depAirport": "",
+                            "arrAirport": "",
+                            "departureDate": Utils.formatDate(o.flightDate),
+                            "departureTime": Utils.formatTime(o.flightDepartureTime),
+                            "arrivalDate": Utils.formatDate(o.flightDate),
+                            "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                            "segmentType": 1,
+                            "sequenceNum": i + 1,
+                            "price": o.orderTotalPrice,
+                            "airprotTax": o.orderFuelTax
+                        }
+                    })
+                }
+            ]
+        });
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": 10015, //状态码 0-成功  非0-失败
+                "errorMsg": "订单没找到" //失败具体原因
+            }
+        })
+    }
+});
+
 router.post('/NotifyTicket', async (req, res, next) => {
     let orderNo = req.body.orderNo;
     let status = req.body.status;
