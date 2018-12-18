@@ -7,6 +7,91 @@ let Key = require('../model/key');
 let cheerio = require('cheerio');
 
 
+router.post('/RefundConfirm', async (req, res, next) => {
+    try {
+        let orderNo = req.body.orderNo;
+        let orders = await groupDetail(orderNo);
+
+        let os = [];
+        if (orders.orderId) {
+            for (let date in orders.flights) {
+                os.push(orders.flights[date]);
+            }
+        }
+        try {
+            for (let i = 0; i < os.length; i++) {
+                let result = await Api.refundReasons(os[i].orderNo);
+                if (!result[0].refundSearchResult) {
+                    throw "此訂單已經申請退款";
+                } else {
+                    let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
+                        if (Number(e.code) === Number(req.body.code)) return e;
+                    });
+                    await Api.refund({
+                        "orderNo": os[i].orderNo,
+                        "passengerIds": result[0].id,
+                        "refundCause": refundInfo.msg,
+                        "refundCauseId": refundInfo.code
+                    })
+                }
+            }
+            Utils.renderApiResult(res, {
+                "version": "1.0.0", //版本号
+                "status": {
+                    "code": 0, //状态码 0-成功  非0-失败
+                    "errorMsg": null//失败具体原因
+                },
+                "passengers": [
+                    {
+                        "name": os[0].passengerName,//乘机人姓名
+                        "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
+                        "cardNum": os[0].passengerIdentify,//证件号码
+                        "ticketNo": os[0].passengerInsuranceNo,//票号
+                        "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                        "mobCountryCode": "86",
+                        "pasId": "1",//乘机人id
+                        "applyType": 1, //参见退票类型说明
+                        "tickets": os.map((o, i) => {
+                            return {
+                                "ticketNo": o.passengerTicketNo, //票号
+                                "segmentIndex": {
+                                    "flightNum": o.flightNo, //出票航段航班号
+                                    "segmentType": 1, //出票航程索引
+                                    "sequenceNum": i + 1//出票航段索引
+                                }
+                            }
+                        }),
+                        "flights": os.map((o, i) => {
+                            return {
+                                "segmentType": 1,
+                                "sequenceNum": i + 1,
+                                "refundId": new Date().getTime()//退票流水
+                            }
+                        })
+                    }
+                ]
+            });
+        } catch (e) {
+            Utils.renderApiResult(res, {
+                "version": "1.0.0", //版本号
+                "status": {
+                    "code": 10017, //状态码 0-成功  非0-失败
+                    "errorMsg": "退款失败" //失败具体原因
+                }
+            })
+        }
+
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": 10016, //状态码 0-成功  非0-失败
+                "errorMsg": "找不到订单" //失败具体原因
+            }
+        })
+    }
+});
+
 router.post('/RefundSearch', async (req, res, next) => {
     try {
         let orderNo = req.body.orderNo;
@@ -21,20 +106,30 @@ router.post('/RefundSearch', async (req, res, next) => {
             return Api.refundReasons(o.orderNo);
         }));
 
+        let fee = reasons.map((e) => {
+            return {
+                refundAmount: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.returnRefundFee,
+                refundFee: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.refundFee
+            }
+        });
+
         Utils.renderApiResult(res, {
-            "test": reasons,
             "version": "1.0.0", //版本号
             "status": {
                 "code": "0", //状态码 0-成功  非0-失败
                 "errorMsg": "" //失败具体原因
             },
-            "businessOrderNo":  orderNo, //业务单号,
+            "businessOrderNo": orderNo, //业务单号,
             "orderNo": orderNo,
-            "refundAmount": "123.00", //退票金额
-            "refundFee": "20.00", //退票手续费
+            "refundAmount": eval(fee.map((e) => {
+                return e.refundAmount
+            }).join('+')).toFixed(2), //退票金额
+            "refundFee": eval(fee.map((e) => {
+                return e.refundFee
+            }).join('+')).toFixed(2), //退票手续费
             "passengers": [{
                 "name": os[0].passengerName,//乘机人姓名
-                "cardType": "PP",////证件类型，NI：身份证，PP：护照，OT：其他
+                "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
                 "cardNum": os[0].passengerIdentify,//证件号码
                 "ticketNo": os[0].passengerInsuranceNo,//票号
                 "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
@@ -77,12 +172,11 @@ router.post('/RefundSearch', async (req, res, next) => {
             }]
         });
     } catch (e) {
-        console.log(e);
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
             "status": {
-                "code": 10015, //状态码 0-成功  非0-失败
-                "errorMsg": "订单没找到" //失败具体原因
+                "code": 10016, //状态码 0-成功  非0-失败
+                "errorMsg": "没找到订单或者目前状态无法申请退款" //失败具体原因
             }
         })
     }
