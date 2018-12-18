@@ -278,9 +278,9 @@ router.get('/callback', async (req, res, next) => {
         name: req.session.user.name,
         control: "回填票号",
         orderNo: req.query.orderNo
-    }
+    };
     console.log(await ControlLog.insert(conditionLog));
-
+    await Api.sendTicket(await Order.findById(req.query.orderNo));
     try {
         if (req.query.goTicker) {
             var condition = {"_id": req.query.goTickerId};
