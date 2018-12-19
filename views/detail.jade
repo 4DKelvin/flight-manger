@@ -195,7 +195,6 @@ block script
                                 alert("回填成功");
                             }
                         } else {
-                            parent.find('td').eq(3).html(res.data.orderStatus);
                             $(".ticket[order-no='" + orderNo + "']").html(res.data.passengerTicketNo);
                         }
                     }
