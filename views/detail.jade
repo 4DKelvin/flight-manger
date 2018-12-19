@@ -84,7 +84,7 @@ block content
                             input(type='text', name='goTicket', placeholder=' 去程票号' id='goTicker' value=orders[0].passengerTicketNo)
                         td.ticket(order-no=orders[1].orderNo)
                             input(type='hidden', name='backTicketId', placeholder=' 去程票号' id='backTickerId' value=orders[1]._id)
-                            input(type='text', name='backTicket', placeholder=' 返程去程票号' id='backTicker' value=orders[1].passengerTicketNo)
+                            input(type='text', name='backTicket', placeholder=' 返程票号' id='backTicker' value=orders[1].passengerTicketNo)
                         td
                             input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='callback', value='回填票号' id="change")
             fieldset
@@ -109,7 +109,7 @@ block content
                                 input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付' id="pay")
                                 input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票' id="refund")
                                 input.am-btn-sm.am-btn.am-btn-primary(type='button', name='endorse', value='改簽' id="endorse" onclick='endo()')
-                                input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', id="orderNo" name='orderNo', value='#{order.orderNo}')
+                                input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', class="orderNo" name='orderNo', value='#{order.orderNo}')
             fieldset
                 legend.am-text-sm 該簽退規則
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
@@ -173,7 +173,7 @@ block script
         $(document).on('click', '.action', function (e) {
             e.preventDefault();
             var parent = $(this).parents('tr');
-            var orderNo = $("#orderNo").val();
+            var orderNo = parent.attr('order-no');
             var orderId = parent.attr('order-id');
             var orderAgent = parent.attr('order-agent');
             var goTickerId = $("#goTickerId").val();
