@@ -1394,22 +1394,22 @@ async function singlePrice(dep, arr, date, time, flightNo) {
                 "source": "own",
                 "flightNo": flightNo, //航班号 往返为CA4387-CA4378
                 "adult": {
-                    "printPrice": booking.extInfo.ticketPirce, //票面价
-                    "salePrice": Number(booking.extInfo.price) + 50, //销售价
+                    "printPrice": "", //票面价
+                    "salePrice": "", //销售价
                     "discount": p.discount, //折扣
-                    "flightPrice": booking.extInfo.price, //机票价格
-                    "fuelTax": "30", // 燃油费
-                    "airportFee": "50", // 机建费
-                    "tax": "50" //税
+                    "flightPrice": booking.extInfo.barePrice, //机票价格
+                    "fuelTax": booking.priceInfo.tof, // 燃油费
+                    "airportFee": booking.priceInfo.arf, // 机建费
+                    "tax": "0" //税
                 },
                 "child": {
                     "printPrice": booking.extInfo.ticketPirce,
                     "salePrice": p.businessExtMap.childPrice,
                     "discount": p.discount,
                     "flightPrice": p.businessExtMap.childPrice,
-                    "fuelTax": "10",
-                    "airportFee": "0",
-                    "tax": "0"
+                    "fuelTax": booking.priceInfo.tof, // 燃油费
+                    "airportFee": booking.priceInfo.arf, // 机建费
+                    "tax": "0" //税
                 },
                 "infant": {},
                 "tgqRuleId": booking.tgqShowData.changeRule, //退改签key，对应tgqRules
