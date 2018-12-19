@@ -80,11 +80,17 @@ block content
                         td   #{orders[0].passengerIdentifyType}
                         td   #{orders[0].passengerIdentify}
                         td.ticket(order-no=orders[0].orderNo)
-                            input(type='hidden', name='goTicketId', placeholder=' 去程票号' id='goTickerId' value=orders[0]._id)
-                            input(type='text', name='goTicket', placeholder=' 去程票号' id='goTicker' value=orders[0].passengerTicketNo)
+                            if orders[0].passengerTicketNo
+                                span #{orders[0].passengerTicketNo}
+                            else
+                                input(type='hidden', name='goTicketId', placeholder=' 去程票号' id='goTickerId' value=orders[0]._id)
+                                input(type='text', name='goTicket', placeholder=' 去程票号' id='goTicker' value=orders[0].passengerTicketNo)
                         td.ticket(order-no=orders[1].orderNo)
-                            input(type='hidden', name='backTicketId', placeholder=' 去程票号' id='backTickerId' value=orders[1]._id)
-                            input(type='text', name='backTicket', placeholder=' 返程票号' id='backTicker' value=orders[1].passengerTicketNo)
+                            if orders[1].passengerTicketNo
+                                span #{orders[1].passengerTicketNo}
+                            else
+                                input(type='hidden', name='backTicketId', placeholder=' 去程票号' id='backTickerId' value=orders[1]._id)
+                                input(type='text', name='backTicket', placeholder=' 返程票号' id='backTicker' value=orders[1].passengerTicketNo)
                         td
                             input.action.am-btn-sm.am-btn.am-btn-primary(type='button', name='callback', value='回填票号' id="change")
             fieldset
