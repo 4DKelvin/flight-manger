@@ -468,11 +468,11 @@ router.post('/OrderInfo', async (req, res, next) => {
             "childrenCount": "0", //儿童数
             "infantCount": "0",  //婴儿数
             "adult": {
-                "printPrice": Number(remotes[0].passengerTypes[0].printPrice) + Number(remotes[1].passengerTypes[0].printPrice),
-                "salePrice": Number(remotes[0].passengerTypes[0].realPrice) + Number(remotes[1].passengerTypes[0].realPrice),
+                "printPrice": "",
+                "salePrice": "",
                 "discount": "0",
-                "flightPrice": Number(remotes[0].passengerTypes[0].constructionFee) + Number(remotes[1].passengerTypes[0].constructionFee),
-                "tax": Number(remotes[0].passengerTypes[0].fuelTax) + Number(remotes[1].passengerTypes[0].fuelTax)
+                "flightPrice": Number(remotes[0].passengerTypes[0].realPrice) + Number(remotes[1].passengerTypes[0].realPrice),
+                "tax": Number(remotes[0].passengerTypes[0].constructionFee) + Number(remotes[1].passengerTypes[0].constructionFee) + Number(remotes[0].passengerTypes[0].fuelTax) + Number(remotes[1].passengerTypes[0].fuelTax)
             },
             "child": null,
             "infant": null
