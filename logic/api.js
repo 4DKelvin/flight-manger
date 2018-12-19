@@ -715,7 +715,7 @@ router.post('/SearchAV', async (req, res, next) => {
                 "code": "4002", //状态码 0-成功  非0-失败
                 "errorMsg": e //失败具体原因
             },
-            "search": null
+            "searchResponse": null
         });
     }
     let flightProductGroup = [];
@@ -729,7 +729,7 @@ router.post('/SearchAV', async (req, res, next) => {
                 "code": "500", //状态码 0-成功  非0-失败
                 "errorMsg": "無航班信息" //失败具体原因
             },
-            "search": null
+            "searchResponse": null
         });
     }
     for (let startIndex = 0; startIndex < Math.min(result.flightInfos.length, 5); startIndex++) {
@@ -1028,7 +1028,7 @@ router.post('/SearchAV', async (req, res, next) => {
             "code": "0", //状态码 0-成功  非0-失败
             "errorMsg": "" //失败具体原因
         },
-        "search": {
+        "searchResponse": {
             "flightProductGroup": flightProductGroup,
             "flights": flights,
             "products": products,
