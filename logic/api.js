@@ -107,12 +107,12 @@ router.post('/RefundSearch', async (req, res, next) => {
         }));
 
         let fee = reasons.map((e) => {
+            console.log(e[0]);
             return {
                 refundAmount: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.returnRefundFee,
                 refundFee: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.refundFee
             }
         });
-
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
             "status": {
@@ -172,6 +172,7 @@ router.post('/RefundSearch', async (req, res, next) => {
             }]
         });
     } catch (e) {
+        console.log(e);
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
             "status": {
