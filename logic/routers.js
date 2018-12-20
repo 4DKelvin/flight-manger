@@ -137,14 +137,27 @@ router.get('/refresh', async (req, res, next) => {
     console.log(await ControlLog.insert(conditionLog));
 
     if (req.query.orderNo) {
+        let local = await Order.findById(req.query.orderNo);
         let order = await Api.orderDetail(req.query.orderNo);
         if (order) {
-            Utils.renderJson(res, await Order.insertOrUpdate({
-                orderNo: order.detail.orderNo,
-                orderStatus: order.detail.status,
-                notice: order.other.tgqMsg,
-                passengerTicketNo: order.passengers[0].ticketNo
-            }));
+            let newOrder = {};
+            if (!local.passengerTicketNo) {
+                newOrder = await Order.insertOrUpdate({
+                    orderNo: order.detail.orderNo,
+                    orderStatus: order.detail.status,
+                    notice: order.other.tgqMsg,
+                    passengerTicketNo: order.passengers[0].ticketNo
+                });
+                Api.sendTicket(newOrder);
+            } else {
+                newOrder = await Order.insertOrUpdate({
+                    orderNo: order.detail.orderNo,
+                    orderStatus: order.detail.status,
+                    notice: order.other.tgqMsg,
+                    passengerTicketNo: order.passengers[0].ticketNo
+                });
+            }
+            Utils.renderJson(res, newOrder);
         } else {
             Utils.renderJsonError(res, "無結果");
         }
