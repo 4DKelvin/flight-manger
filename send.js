@@ -2,7 +2,7 @@ const Order = require("./model/order");
 const Api = require("./lib/flight");
 
 let main = async () => {
-    let orders = await Order.findByCon({
+    let orders = await Order.find({
         groupId: "TAN1545213127447"
     });
     console.log(orders);

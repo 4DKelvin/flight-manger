@@ -39,6 +39,14 @@ module.exports = {
     query: function () {
         return plane_orders.find({});
     },
+    find: function (condition) {
+        return new Promise(function (resolve, reject) {
+            plane_orders.find(condition).lean().exec(function (err, data) {
+                if (err) reject(err);
+                else resolve(data);
+            })
+        })
+    },
     findByCon: function (condition) {
         return new Promise(function (resolve, reject) {
             plane_orders.findOne(condition).lean().exec(function (err, data) {
@@ -96,7 +104,7 @@ module.exports = {
             });
         }
         return new Promise((resolve, reject) => {
-            query.skip(60 * page).limit(30).sort( { groupId: -1 } ).exec((err, res) => {
+            query.skip(60 * page).limit(30).sort({groupId: -1}).exec((err, res) => {
                 if (err) reject(err);
                 else resolve(res);
             })
