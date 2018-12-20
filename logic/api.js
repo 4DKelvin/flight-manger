@@ -106,13 +106,23 @@ router.post('/RefundSearch', async (req, res, next) => {
             return Api.refundReasons(o.orderNo);
         }));
 
-        let fee = reasons.map((e) => {
-            console.log(e[0]);
-            return {
-                refundAmount: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.returnRefundFee,
-                refundFee: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.refundFee
-            }
-        });
+        let fee = [];
+        try {
+            fee = reasons.map((e) => {
+                return {
+                    refundAmount: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.returnRefundFee,
+                    refundFee: e[0].refundSearchResult.tgqReasons[0].refundPassengerPriceInfoList[0].refundFeeInfo.refundFee
+                }
+            });
+        } catch (e) {
+            return Utils.renderApiResult(res, {
+                "version": "1.0.0", //版本号
+                "status": {
+                    "code": 10017, //状态码 0-成功  非0-失败
+                    "errorMsg": reasons[0][0].refundSearchResult.tgqReasons == null ? reasons[0][0].refundSearchResult.reason : reasons[1][0].refundSearchResult.reason //失败具体原因
+                }
+            })
+        }
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
             "status": {
@@ -172,7 +182,6 @@ router.post('/RefundSearch', async (req, res, next) => {
             }]
         });
     } catch (e) {
-        console.log(e);
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
             "status": {
