@@ -201,7 +201,11 @@ block script
                                 alert("回填成功");
                             }
                         } else {
-                            $(".ticket[order-no='" + orderNo + "']").html(res.data.passengerTicketNo);
+                            if(res.data.passengerTicketNo){
+                                $(".ticket[order-no='" + orderNo + "']").html(res.data.passengerTicketNo);
+                            }
+                            parent.find('td').eq(3).html(res.data.orderStatus);
+
                         }
                     }
                 } else {
