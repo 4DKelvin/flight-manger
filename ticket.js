@@ -17,7 +17,7 @@ setInterval(async () => {
                 passengerTicketNo: order.passengers[0].ticketNo
             });
             if (order.passengers[0].ticketNo) {
-                await Api.sendTicket(order);
+                await Api.sendTicket(await Order.findById(order.detail.orderNo));
             }
         }
     }
