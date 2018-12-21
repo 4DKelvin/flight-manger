@@ -72,6 +72,7 @@ router.post('/RefundConfirm', async (req, res, next) => {
                 ]
             });
         } catch (e) {
+            console.log(e);
             Utils.renderApiResult(res, {
                 "version": "1.0.0", //版本号
                 "status": {
@@ -215,7 +216,7 @@ router.post('/ApplyRefund', async (req, res, next) => {
             "passengers": [
                 {
                     "name": os[0].passengerName,//乘机人姓名
-                    "cardType": "PP",////证件类型，NI：身份证，PP：护照，OT：其他
+                    "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
                     "cardNum": os[0].passengerIdentify,//证件号码
                     "ticketNo": os[0].passengerInsuranceNo,//票号
                     "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
