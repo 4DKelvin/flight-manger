@@ -179,7 +179,7 @@ router.post('/RefundSearch', async (req, res, next) => {
                         "sequenceNum": i + 1,
                         "price": o.orderTotalPrice,
                         "fuelTax": o.orderFuelTax,
-                        "airportTax": Number(o.orderTotalPrice) - Number(o.orderFuelTax)
+                        "airportTax": o.orderConstructionFee
                     }
                 })
             }]
@@ -254,7 +254,7 @@ router.post('/ApplyRefund', async (req, res, next) => {
                             "sequenceNum": i + 1,
                             "price": o.orderTotalPrice,
                             "fuelTax": o.orderFuelTax,
-                            "airportTax": Number(o.orderTotalPrice) - Number(o.orderFuelTax)
+                            "airportTax": o.orderConstructionFee
                         }
                     })
                 }
@@ -556,8 +556,8 @@ router.post('/BookingOrder', async (req, res, next) => {
                 orderStatus: orderInfo.detail.status,
                 orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
                 orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-                orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                orderConstructionFee: bookingStart.priceInfo.arf,
+                orderFuelTax: bookingStart.priceInfo.tof,
                 orderRealPrice: orderInfo.passengerTypes[0].realPrice,
                 orderAgent: bookingStart.extInfo.clientId,
                 passengerName: orderInfo.passengers[0].name,
@@ -591,8 +591,8 @@ router.post('/BookingOrder', async (req, res, next) => {
                 orderStatus: orderInfo.detail.status,
                 orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
                 orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-                orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                orderConstructionFee: bookingEnd.priceInfo.arf,
+                orderFuelTax: bookingEnd.priceInfo.tof,
                 orderRealPrice: orderInfo.passengerTypes[0].realPrice,
                 orderAgent: bookingEnd.extInfo.clientId,
                 passengerName: orderInfo.passengers[0].name,
@@ -1327,8 +1327,8 @@ router.post('/booking', async (req, res, next) => {
                     orderStatus: orderInfo.detail.status,
                     orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
                     orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                    orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-                    orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                    orderConstructionFee: bookingStart.priceInfo.arf,
+                    orderFuelTax: bookingStart.priceInfo.tof,
                     orderRealPrice: orderInfo.passengerTypes[0].realPrice,
                     orderAgent: bookingStart.extInfo.clientId,
                     passengerName: orderInfo.passengers[0].name,
@@ -1358,8 +1358,8 @@ router.post('/booking', async (req, res, next) => {
                     orderStatus: orderInfo.detail.status,
                     orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
                     orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                    orderConstructionFee: orderInfo.passengerTypes[0].constructionFee,
-                    orderFuelTax: orderInfo.passengerTypes[0].fuelTax,
+                    orderConstructionFee: bookingEnd.priceInfo.arf,
+                    orderFuelTax: bookingEnd.priceInfo.tof,
                     orderRealPrice: orderInfo.passengerTypes[0].realPrice,
                     orderAgent: bookingEnd.extInfo.clientId,
                     passengerName: orderInfo.passengers[0].name,
