@@ -129,6 +129,7 @@ router.post('/RefundSearch', async (req, res, next) => {
                 "code": "0", //状态码 0-成功  非0-失败
                 "errorMsg": "" //失败具体原因
             },
+
             "businessOrderNo": orderNo, //业务单号,
             "orderNo": orderNo,
             "refundAmount": eval(fee.map((e) => {
@@ -176,7 +177,8 @@ router.post('/RefundSearch', async (req, res, next) => {
                         "segmentType": 1,
                         "sequenceNum": i + 1,
                         "price": o.orderTotalPrice,
-                        "airprotTax": o.orderFuelTax
+                        "fuelTax": o.orderFuelTax,
+                        "airportTax": Number(o.orderTotalPrice) - Number(o.orderFuelTax)
                     }
                 })
             }]
@@ -426,8 +428,8 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "cabin": o.flightCabin, //舱位
                 "childCabin": "Y", //儿童舱位
                 "planeModule": "波音737(中)", //机型
-                "depAirportCode": o.flightDepartureCode, //出发机场三字码
-                "arrAirportCode": o.flightArrivalCode, //到达机场三字码
+                "depAirportCode": "", //出发机场三字码
+                "arrAirportCode": "", //到达机场三字码
                 "departureDate": Utils.formatDate(o.flightDate), //出发日期
                 "departureTime": Utils.formatTime(o.flightDepartureTime), //出发时间
                 "arrivalDate": Utils.formatDate(o.flightDate), //到达日期
@@ -444,8 +446,8 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "airCompany": "中国东方航空", //航司名称
                 "depCity": o.flightDeparture, //出发城市,可空
                 "arrCity": o.flightArrival, //到达城市,可空
-                "depCityCode": "", //出发城市码,可空
-                "arrCityCode": "", //到达城市码,可空
+                "depCityCode": o.flightDepartureCode, //出发城市码,可空
+                "arrCityCode": o.flightArrivalCode, //到达城市码,可空
                 "crossDays": "",
                 "stopInfos": null,
                 // "actCarrier": "", //实际承运人为空表示就是销售承运人,可空
