@@ -27,6 +27,7 @@ router.post('/RefundConfirm', async (req, res, next) => {
                     let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
                         if (Number(e.code) === Number(req.body.code)) return e;
                     });
+                    console.log(refundInfo);
                     await Api.refund({
                         "orderNo": os[i].orderNo,
                         "passengerIds": result[0].id,
