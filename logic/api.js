@@ -65,7 +65,7 @@ router.post('/RefundConfirm', async (req, res, next) => {
                             return {
                                 "segmentType": 1,
                                 "sequenceNum": i + 1,
-                                "refundId": new Date().getTime()//退票流水
+                                "refundId": new Date().getTime() + (54321 * i)//退票流水
                             }
                         })
                     }
