@@ -162,12 +162,12 @@ router.post('/RefundSearch', async (req, res, next) => {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
                         "childCabin": "Y",
-                        "depCityCode": o.flightDepartureCode,
-                        "arrCityCode": o.flightArrivalCode,
+                        "depCityCode": "",
+                        "arrCityCode": "",
                         "depCity": "",
                         "arrCity": "",
-                        "depAirportCode": "",
-                        "arrAirportCode": "",
+                        "depAirportCode": o.flightDepartureCode,
+                        "arrAirportCode": o.flightArrivalCode,
                         "depAirport": "",
                         "arrAirport": "",
                         "departureDate": Utils.formatDate(o.flightDate),
@@ -237,12 +237,12 @@ router.post('/ApplyRefund', async (req, res, next) => {
                             "flightNum": o.flightNo,
                             "cabin": "Y",
                             "childCabin": "Y",
-                            "depCityCode": o.flightDepartureCode,
-                            "arrCityCode": o.flightArrivalCode,
+                            "depCityCode": "",
+                            "arrCityCode": "",
                             "depCity": "",
                             "arrCity": "",
-                            "depAirportCode": "",
-                            "arrAirportCode": "",
+                            "depAirportCode": o.flightDepartureCode,
+                            "arrAirportCode": o.flightArrivalCode,
                             "depAirport": "",
                             "arrAirport": "",
                             "departureDate": Utils.formatDate(o.flightDate),
@@ -252,7 +252,8 @@ router.post('/ApplyRefund', async (req, res, next) => {
                             "segmentType": 1,
                             "sequenceNum": i + 1,
                             "price": o.orderTotalPrice,
-                            "airprotTax": o.orderFuelTax
+                            "fuelTax": o.orderFuelTax,
+                            "airportTax": Number(o.orderTotalPrice) - Number(o.orderFuelTax)
                         }
                     })
                 }
@@ -428,8 +429,8 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "cabin": o.flightCabin, //舱位
                 "childCabin": "Y", //儿童舱位
                 "planeModule": "波音737(中)", //机型
-                "depAirportCode": "", //出发机场三字码
-                "arrAirportCode": "", //到达机场三字码
+                "depAirportCode": o.flightDepartureCode,
+                "arrAirportCode": o.flightArrivalCode,
                 "departureDate": Utils.formatDate(o.flightDate), //出发日期
                 "departureTime": Utils.formatTime(o.flightDepartureTime), //出发时间
                 "arrivalDate": Utils.formatDate(o.flightDate), //到达日期
@@ -446,8 +447,8 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "airCompany": "中国东方航空", //航司名称
                 "depCity": o.flightDeparture, //出发城市,可空
                 "arrCity": o.flightArrival, //到达城市,可空
-                "depCityCode": o.flightDepartureCode, //出发城市码,可空
-                "arrCityCode": o.flightArrivalCode, //到达城市码,可空
+                "depCityCode": "", //出发城市码,可空
+                "arrCityCode": "", //到达城市码,可空
                 "crossDays": "",
                 "stopInfos": null,
                 // "actCarrier": "", //实际承运人为空表示就是销售承运人,可空
@@ -463,9 +464,16 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "ageType": p.type == "成人" ? 0 : 1, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
                 "birthday": "", //出生日期
                 "nationality": null, //国籍
-                "tickets": p.ticketNo ? [{
-                    "ticketNo": p.ticketNo, //票号
-                }] : [],
+                "tickets": orders.map((o, i) => {
+                    return {
+                        "ticketNo": o.passengerTicketNo, //票号
+                        "segmentIndex": {
+                            "flightNum": o.flightNo, //出票航段航班号
+                            "segmentType": 1, //出票航程索引
+                            "sequenceNum": i + 1//出票航段索引
+                        }
+                    }
+                }),
                 "cardType": "NI", //证件类型，NI：身份证，PP：护照，OT：其他
                 "cardNum": orders[0].passengerIdentify, //证件号码
                 "cardExpired": null, //证件过期时间
