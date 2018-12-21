@@ -7,7 +7,7 @@ setInterval(async () => {
         let local = orders[i];
         let order = await Api.orderDetail(local.orderNo);
         if (order) {
-            if (!local.passengerTicketNo) {
+            if (!local.passengerTicketNo && order.passengers[0].ticketNo) {
                 Api.sendTicket(await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,
                     orderStatus: order.detail.status,
