@@ -421,7 +421,7 @@ router.post('/OrderInfo', async (req, res, next) => {
         },
         "businessOrderNo": req.body.businessOrderNo, //业务单号
         "orderNo": req.body.orderNo, //航司单号
-        "orderStatus": [status[orders[0].orderStatus], status[orders[1].orderStatus]],
+        "orderStatus": status[orders[0].orderStatus],
         "flights": orders.map((o) => {
             return {
                 "sequenceNum": 1, //航班序号
