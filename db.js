@@ -27,6 +27,8 @@ module.exports = {
         flightArrivalCode: String,
         flightArrivalTime: Number,
         flightCabin: String,
+        refundAmount: Number,
+        refundFee: Number,
         notice: String,
         operator: String,
         lock: String,

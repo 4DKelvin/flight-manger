@@ -7,6 +7,86 @@ let Key = require('../model/key');
 let cheerio = require('cheerio');
 
 
+router.post('/ChangeOrderinfo', async (req, res, next) => {
+
+});
+
+router.post('/RefundInfo', async (req, res, next) => {
+    let orderNo = req.body.orderNo;
+    let orders = await groupDetail(orderNo);
+    try {
+        let os = [];
+        if (orders.orderId) {
+            for (let date in orders.flights) {
+                os.push(orders.flights[date]);
+            }
+        }
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",//版本号
+            "status": {
+                "code": 0,//状态码 0-成功  非0-失败
+                "errorMsg": null//失败原因描述
+            },
+            "orderNo": req.body.orderNo,
+            "businessOrderNo": req.body.orderNo,//业务单号,
+            "refundAmount": eval(os.map((e) => {
+                return e.refundAmount
+            }).join('+')).toFixed(2), //退票金额
+            "refundFee": eval(os.map((e) => {
+                return e.refundFee
+            }).join('+')).toFixed(2),
+            "passengers": [
+                {
+                    "name": os[0].passengerName,//乘机人姓名
+                    "cardType": "NI",//证件类型，NI：身份证，PP：护照，OT：其他
+                    "cardNum": os[0].passengerIdentify,//证件号码
+                    "ticketNo": os[0].passengerTicketNo,//票号
+                    "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                    "mobCountryCode": "86",
+                    "flights":
+                        os.map((o, i) => {
+                            return {
+                                "flightNum": o.flightNo,
+                                "cabin": "Y",
+                                "childCabin": "Y",
+                                "depCityCode": "",
+                                "arrCityCode": "",
+                                "depCity": "",
+                                "arrCity": "",
+                                "depAirportCode": o.flightDepartureCode,
+                                "arrAirportCode": o.flightArrivalCode,
+                                "depAirport": "",
+                                "arrAirport": "",
+                                "refundAmount": o.refundAmount,//单人航段退票金额
+                                "refundFee": o.refundFee,//单人航段退票手续费
+                                "departureDate": Utils.formatDate(o.flightDate),
+                                "departureTime": Utils.formatTime(o.flightDepartureTime),
+                                "arrivalDate": Utils.formatDate(o.flightDate),
+                                "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                                "segmentType": 1,
+                                "sequenceNum": i + 1,
+                                "price": o.orderTotalPrice,
+                                "fuelTax": o.orderFuelTax,
+                                "airportTax": o.orderConstructionFee,
+                                "status": 2,//退票状态
+                                "refundId": new Date().getTime(),
+                                "applyType": 1 //自愿退票1  非自愿退票2
+                            }
+                        })
+                }
+            ]
+        })
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": 10016, //状态码 0-成功  非0-失败
+                "errorMsg": "找不到订单" //失败具体原因
+            }
+        })
+    }
+});
+
 router.post('/RefundConfirm', async (req, res, next) => {
     try {
         let orderNo = req.body.orderNo;
@@ -123,6 +203,17 @@ router.post('/RefundSearch', async (req, res, next) => {
                     "errorMsg": reasons[0][0].refundSearchResult.tgqReasons == null ? reasons[0][0].refundSearchResult.reason : reasons[1][0].refundSearchResult.reason //失败具体原因
                 }
             })
+        }
+        for (let i = 0; i < os.length; i++) {
+            try {
+                Order.updateByCon({orderNo: os[i].orderNo}, {
+                    refundAmount: fee[i].refundAmount,
+                    refundFee: fee[i].refundFee
+                });
+            } catch (e) {
+                console.log(e);
+                continue;
+            }
         }
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
