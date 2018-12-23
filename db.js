@@ -47,7 +47,8 @@ module.exports = {
             default: Date.now
         },
         control: String,
-        orderNo: String
+        orderNo: String,
+        groupId: String
     }),
     booking_key: mongoose.model('booking_key', {
         name: String,

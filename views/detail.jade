@@ -115,7 +115,8 @@ block content
                                 input.action.am-btn-sm.am-btn.am-btn-success(type='button', name='pay', value='支付' id="pay")
                                 input.action.am-btn-sm.am-btn.am-btn-danger(type='button', name='refund', value='退票' id="refund")
                                 input.am-btn-sm.am-btn.am-btn-primary(type='button', name='endorse', value='改簽' id="endorse" onclick='endo()')
-                                input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', class="orderNo" name='orderNo', value='#{order.orderNo}')
+                                input.action.am-btn-sm.am-btn.am-btn-primary(type='hidden', id="orderNo" name='orderNo', value='#{order.orderNo}')
+                                input(type='hidden', name='groupId', id='groupId' value='#{orders[0].groupId}')
             fieldset
                 legend.am-text-sm 該簽退規則
                 table.am-table.am-table-bordered.am-table-radius.box-shadow.am-text-left
@@ -180,6 +181,7 @@ block script
             e.preventDefault();
             var parent = $(this).parents('tr');
             var orderNo = parent.attr('order-no');
+            var groupId = $("#groupId").val();
             var orderId = parent.attr('order-id');
             var orderAgent = parent.attr('order-agent');
             var goTickerId = $("#goTickerId").val();
@@ -187,7 +189,7 @@ block script
             var goTicker = $("#goTicker").val();
             var backTicker = $("#backTicker").val();
             var action = $(this).attr('name');
-            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId + '&flag=' + flag + "&goTickerId=" + goTickerId + "&backTickerId=" + backTickerId + "&goTicker=" + goTicker + "&backTicker=" + backTicker, function (res) {
+            $.get('/' + action + '?orderNo=' + orderNo + '&orderAgent=' + orderAgent + '&orderId=' + orderId + '&flag=' + flag + "&goTickerId=" + goTickerId + "&backTickerId=" + backTickerId + "&goTicker=" + goTicker + "&backTicker=" + backTicker +"&groupId=" + groupId, function (res) {
                 if (res.code == 200) {
                     if (res.code == '200') {
                         if (action == 'pay') {

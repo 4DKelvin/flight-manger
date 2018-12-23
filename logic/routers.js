@@ -47,7 +47,7 @@ router.get('/detail', async (req, res, next) => {
     var flag = "0";
 
     let orders = await new Promise((resolve, reject) => {
-        Order.query().where({groupId: req.query.orderNo}).lean().exec((err, orders) => {
+        Order.query().where({groupId: req.query.groupId}).lean().exec((err, orders) => {
             if (err) reject(err);
             else resolve(orders);
         })
@@ -99,6 +99,9 @@ router.get('/detail', async (req, res, next) => {
             }
             if (order.orderOriginPrice) {
                 order.price = '¥ ' + Number(order.orderOriginPrice).toFixed(2);
+            }
+            if (order.date) {
+                order.date = Utils.formatDateTime(order.date);
             }
             return order;
         })
@@ -253,7 +256,7 @@ router.get('/locked', async (req, res, next) => {
     //console.log(await ControlLog.insert(conditionLog));
     var control = "";
 
-    if (req.query.flag && req.query.orderNo) {
+    if (req.query.flag && req.query.groupId) {
         try {
             var updateStr;
             var flag;
@@ -266,18 +269,17 @@ router.get('/locked', async (req, res, next) => {
                 flag = "0";
                 control = "解锁订单"
             }
-            var condition = {"orderNo": req.query.orderNo};
+            var condition = {"groupId": req.query.groupId};
             console.log(await Order.updateByCon(condition, updateStr));
 
             //操作日志
             var conditionLog = {
                 name: req.session.user.name,
                 control: control,
-                orderNo: req.query.orderNo
+                groupId: req.query.groupId
             }
             console.log(await ControlLog.insert(conditionLog));
 
-            var data = {"result": flag};
             Utils.renderJson(res, flag);
 
         } catch (e) {
@@ -315,6 +317,12 @@ router.get('/callback', async (req, res, next) => {
 });
 router.get('/endoPage', async (req, res, next) => {
     res.render('endo', {title: '注册界面', orderNo: req.query.orderNo});
+});
+router.get('/showPrice', async (req, res, next) => {
+    Utils.renderJson(res, "1000");
+});
+router.get('/redoPay', async (req, res, next) => {
+    Utils.renderJson(res, "1000");
 });
 
 
