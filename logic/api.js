@@ -512,7 +512,7 @@ router.post('/OrderInfo', async (req, res, next) => {
             "code": "0", //状态码 0-成功  非0-失败
             "errorMsg": "" //失败具体原因
         },
-        "createTime": orders[0].createAt,
+        "createTime": Utils.formatDateTime(orders[0].createAt),
         "businessOrderNo": req.body.orderNo, //业务单号
         "orderNo": req.body.orderNo, //航司单号
         "orderStatus": status[orders[0].orderStatus],
