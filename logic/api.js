@@ -506,14 +506,14 @@ router.post('/OrderInfo', async (req, res, next) => {
         "退款中": -1,
         "未知状态": -1
     };
-    console.log(orders[0].orderStatus,status[orders[0].orderStatus]);
     Utils.renderApiResult(res, {
         "version": "1.0.0", //版本号
         "status": {
             "code": "0", //状态码 0-成功  非0-失败
             "errorMsg": "" //失败具体原因
         },
-        "businessOrderNo": req.body.businessOrderNo, //业务单号
+        "createTime": orders[0].createAt,
+        "businessOrderNo": req.body.orderNo, //业务单号
         "orderNo": req.body.orderNo, //航司单号
         "orderStatus": status[orders[0].orderStatus],
         "flights": orders.map((o) => {
@@ -644,6 +644,7 @@ router.post('/BookingOrder', async (req, res, next) => {
             let arrTime = orderInfo.flightInfo[0].deptTime;
             let totalPrice = orderInfo.passengerTypes[0].allPrices;
             await Order.insertOrUpdate({
+                createAt: new Date().getTime(),
                 groupId: groupId,
                 orderId: order.id,
                 orderNo: orderInfo.detail.orderNo,
@@ -679,6 +680,7 @@ router.post('/BookingOrder', async (req, res, next) => {
             arrTime = orderInfo.flightInfo[0].deptTime;
             totalPrice += orderInfo.passengerTypes[0].allPrices;
             await Order.insertOrUpdate({
+                createAt: new Date().getTime(),
                 groupId: groupId,
                 orderId: order.id,
                 orderNo: orderInfo.detail.orderNo,
