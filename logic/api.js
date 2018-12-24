@@ -504,6 +504,7 @@ router.post('/OrderInfo', async (req, res, next) => {
         "订单取消": 7,
         "未知状态": -1
     };
+    console.log(orders[0].orderStatus,status[orders[0].orderStatus]);
     Utils.renderApiResult(res, {
         "version": "1.0.0", //版本号
         "status": {
