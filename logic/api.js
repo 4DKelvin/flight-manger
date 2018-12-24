@@ -502,6 +502,8 @@ router.post('/OrderInfo', async (req, res, next) => {
         "出票完成": 5,
         "出票失败": 6,
         "订单取消": 7,
+        "退款完成": -1,
+        "退款中": -1,
         "未知状态": -1
     };
     console.log(orders[0].orderStatus,status[orders[0].orderStatus]);
