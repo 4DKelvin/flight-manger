@@ -30,10 +30,10 @@ router.post('/RefundInfo', async (req, res, next) => {
             "orderNo": req.body.orderNo,
             "businessOrderNo": req.body.orderNo,//业务单号,
             "refundAmount": eval(os.map((e) => {
-                return e.refundAmount
+                return e.refundAmount || 0;
             }).join('+')).toFixed(2), //退票金额
             "refundFee": eval(os.map((e) => {
-                return e.refundFee
+                return e.refundFee || 0;
             }).join('+')).toFixed(2),
             "passengers": [
                 {
