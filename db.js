@@ -53,6 +53,25 @@ module.exports = {
         orderNo: String,
         groupId: String
     }),
+    plane_change_order: mongoose.model('plane_controlLog', {
+        orderNo: String,
+        orderStatus: String,
+        changeOrderId: String,
+        changeOrderTicket: String,
+        groupId: String,
+        changeCauseId: String,
+        passengerIds: String,
+        applyRemarks: String,
+        uniqKey: String,
+        qgId: String,
+        gqFee: Number,
+        upgradeFee: Number,
+        flightNo: String,
+        cabinCode: String,
+        startDate: String,
+        startTime: String,
+        endTime: String
+    }),
     booking_key: mongoose.model('booking_key', {
         name: String,
         content: String

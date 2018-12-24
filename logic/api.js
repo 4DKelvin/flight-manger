@@ -4,11 +4,236 @@ let Api = require('../lib/flight');
 let Utils = require('../lib/utils');
 let Order = require('../model/order');
 let Key = require('../model/key');
+let ChangeOrder = require('../model/change');
 let cheerio = require('cheerio');
 
 
-router.post('/ChangeOrderinfo', async (req, res, next) => {
+router.post('/ChangePay', async (req, res, next) => {
+    try {
+        let orderNo = req.body.orderNo;
+        let amount = req.body.payAmount;
+        let orders = await ChangeOrder.find({groupId: orderNo});
+        let total = eval(orders.map((e) => {
+            return e.gqFee;
+        }).join('+'));
+        if (Number(amount) != Number(total)) {
+            return Utils.renderApiResult(res, {
+                "version": "1.0.0",
+                "status": {
+                    "code": 1005,
+                    "errorMsg": "改签订单价钱不匹配"
+                }
+            })
+        } else {
+            try {
+                for (let i = 0; i < orders.length; i++) {
+                    await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee)
+                }
+                Utils.renderApiResult(res, {
+                    "version": "1.0.0", //版本号
+                    "status": {
+                        "code": "0", //状态码 0-成功  非0-失败
+                        "errorMsg": "改签支付成功" //失败具体原因
+                    }
+                })
+            } catch (e) {
+                Utils.renderApiResult(res, {
+                    "version": "1.0.0", //版本号
+                    "status": {
+                        "code": "10123", //状态码 0-成功  非0-失败
+                        "errorMsg": e //失败具体原因
+                    }
+                })
+            }
+        }
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0", //版本号
+            "status": {
+                "code": "10005", //状态码 0-成功  非0-失败
+                "errorMsg": "参数错误" //失败具体原因
+            }
+        })
+    }
 
+});
+
+
+router.post('/ChangeBook', async (req, res, next) => {
+    let orderNo = req.body.orderNo;
+    let dates = req.body.changeAirOriDestList.sort((a, b) => {
+        return new Date(a.oriDepartDate) - new Date(b.oriDepartDate);
+    });
+
+    let orders = await groupDetail(orderNo);
+
+    let os = [];
+    try {
+        if (orders.orderId) {
+            for (let date in orders.flights) {
+                os.push(orders.flights[date]);
+            }
+        }
+    } catch (e) {
+        return Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 10016,
+                "errorMsg": "没有此订单"
+            }
+        })
+    }
+    try {
+
+        let cOrders = [];
+        let groupId = "TAN" + new Date().getTime();
+        for (let i = 0; i < dates.length; i++) {
+            let uniqueKey = dates[i].changeFlightCabinDtoList[0].key;
+            let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
+            let changeInfo = reason.changeFlightSegmentList.find(function (e) {
+                if (e.uniqKey === uniqueKey) return e;
+            });
+            let params = {
+                orderNo: os[i].orderNo,
+                changeCauseId: reason.code,
+                passengerIds: reasons[0].id,
+                applyRemarks: reason.msg,
+                uniqKey: uniqueKey,
+                gqFee: changeInfo.gqFee,
+                upgradeFee: changeInfo.upgradeFee,
+                flightNo: changeInfo.flightNo,
+                cabinCode: changeInfo.cabinCode,
+                startDate: changeInfo.changeDate,
+                startTime: changeInfo.startTime,
+                endTime: changeInfo.endTime
+            };
+            let changeRes = await Api.change(params);
+            params.changeOrderId = changeRes[0].id;
+            params.qgId = changeRes[0].changeApplyResult.qgId;
+            params.changeOrderTicket = changeRes[0].ticketNum;
+            params.groupId = groupId;
+            await ChangeOrder.insert(params);
+            cOrders.push(params);
+        }
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 0,
+                "errorMsg": null
+            },
+            "orderNo": req.body.orderNo,//原订单号
+            "subOrderNo": groupId,//改期订单号
+            "orderStatus": 2, //改期单状态 见备注 改期枚举
+            "payPrice": eval(cOrders.map((e) => {
+                return e.gqFee;
+            }).join('+')).toFixed(2),//改期支付金额
+        })
+    } catch (e) {
+        return Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 10019,
+                "errorMsg": "无法提交改签需求"
+            }
+        })
+    }
+});
+
+router.post('/ChangeSearch', async (req, res, next) => {
+    let orderNo = req.body.orderNo;
+    let dates = req.body.changeItem.sort((a, b) => {
+        return new Date(a.departureDate) - new Date(b.departureDate);
+    });
+
+    let orders = await groupDetail(orderNo);
+
+    let os = [];
+    try {
+        if (orders.orderId) {
+            for (let date in orders.flights) {
+                os.push(orders.flights[date]);
+            }
+        }
+    } catch (e) {
+        return Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 10016,
+                "errorMsg": "没有此订单"
+            }
+        })
+    }
+    try {
+        let avResultList = [];
+        for (let i = 0; i < dates.length; i++) {
+            let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
+            avResultList.push({ //每一个节点为一个航线对
+                "depAirportCode": os[i].depAirportCode,
+                "arrAirportCode": os[i].arrAirportCode,
+                "tripFlightList": reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList.map((f) => {
+                    return {
+                        "carrier": "MU",
+                        "flightNum": f.actFlightNo,
+                        "departureDate": f.changeDate,//出发日期
+                        "departureTime": f.startTime,//出发时间
+                        "arrivalDate": f.changeDate,//到达日期
+                        "arrivalTime": f.endTime,
+                        "depTerminal": f.dptTerminal,//出发机场航站楼
+                        "arrTerminal": f.arrTerminal,//到达机场航站楼
+                        "planeModule": "320",//机型
+                        "codeShare": f.share,//是否共享
+                        "actFlightNum": f.actFlightNo,//实际承运航班号
+                        "stops": f.stopFlightInfo.stopCityInfoList.length,//经停次数
+                        "cabin_total_price": os[i].orderOriginPrice,//经济舱全价
+                        "cabinList": [
+                            {
+                                "key": f.uniqKey,//标识航班、仓位唯一索引
+                                "cabin": f.cabinStatus,//仓位
+                                "childCabin": "Y",//儿童仓位
+                                "price": os[i].orderOriginPrice,//票面价
+                                "printPrice": os[i].orderTotalPrice,//仓位报价
+                                "chdPrice": os[i].orderTotalPrice,//儿童仓位报价
+                                "chdPrintPrice": os[i].orderTotalPrice,//儿童票面价
+                                "infPrice": os[i].orderTotalPrice,//婴儿仓位报价
+                                "seatNumber": 'A',//座位数
+                                "childFuelTax": os[i].orderFuelTax,//儿童燃油税
+                                "infantFuelTax": os[i].orderFuelTax,//婴儿燃油税
+                                "adultFuelTax": os[i].orderFuelTax,//成人燃油税
+                                "airportTaxInf": os[i].orderConstructionFee,//婴儿基建费
+                                "airportTaxChd": os[i].orderConstructionFee,//儿童基建费
+                                "airportTax": os[i].orderConstructionFee,//成人基建费
+                                "changeFeeAdt": f.gqFee,//成人改期费,
+                                "diffPriceAdt": f.adultUFee,//成人差价
+                                "payAmountAdt": f.gqFee,//成人实际支付价
+                                "changeFeeChd": f.gqFee,//儿童改期费
+                                "diffPriceChd": f.adultUFee,//儿童差价
+                                "payAmountChd": f.gqFee,//儿童实际支付价
+                                "changeFeeInf": f.gqFee,//婴儿改期费
+                                "diffPriceInf": f.adultUFee,//婴儿差价
+                                "payAmountInf": f.gqFee//婴儿实际支付价
+                            }
+                        ]
+                    }
+                })
+            });
+        }
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 0,
+                "errorMsg": null
+            },
+            "avResultList": avResultList
+        });
+    } catch (e) {
+        return Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 10018,
+                "errorMsg": "查询改签航班失败"
+            }
+        })
+    }
 });
 
 router.post('/RefundInfo', async (req, res, next) => {
@@ -1355,7 +1580,7 @@ router.post('/refund', async (req, res, next) => {
 router.get('/change', async (req, res, next) => {
     if (req.query.order && req.query.date) {
         let result = await Api.changeReasons(req.query.order, req.query.date);
-        Utils.renderJson(res, result[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList);
+        Utils.renderJson(res, result);
     } else {
         Utils.renderJsonError(res, "參數錯誤");
     }
