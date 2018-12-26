@@ -90,7 +90,8 @@ router.post('/ChangeBook', async (req, res, next) => {
         for (let i = 0; i < dates.length; i++) {
             let uniqueKey = dates[i].changeFlightCabinDtoList[0].key;
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].oriDepartDate);
-            let changeInfo = reason.changeFlightSegmentList.find(function (e) {
+            let reason = reasons[0].changeSearchResult.tgqReasons[0];
+            let changeInfo = reasons.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
             });
             let params = {
@@ -108,6 +109,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                 endTime: changeInfo.endTime
             };
             let changeRes = await Api.change(params);
+            console.log(changeRes);
             params.changeOrderId = changeRes[0].id;
             params.qgId = changeRes[0].changeApplyResult.qgId;
             params.changeOrderTicket = changeRes[0].ticketNum;
