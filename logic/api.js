@@ -92,11 +92,12 @@ router.post('/ChangeBook', async (req, res, next) => {
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].oriDepartDate);
             let reason = reasons[0].changeSearchResult.tgqReasons[0];
             if (!reason.changeFlightSegmentList) {
-                throw "改签航班已经失效,请重新下单";
+                throw dates[i].oriDepartDate + "改签航班已经失效,请重新下单";
             }
             let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
             });
+            console.log(changeInfo);
             let params = {
                 orderNo: os[i].orderNo,
                 changeCauseId: reason.code,
