@@ -172,6 +172,7 @@ router.post('/ChangeSearch', async (req, res, next) => {
         let avResultList = [];
         for (let i = 0; i < dates.length; i++) {
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
+            console.log(reasons[0].changeSearchResult.tgqReasons);
             avResultList.push({ //每一个节点为一个航线对
                 "depAirportCode": os[i].depAirportCode,
                 "arrAirportCode": os[i].arrAirportCode,
