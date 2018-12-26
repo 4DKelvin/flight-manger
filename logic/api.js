@@ -172,7 +172,9 @@ router.post('/ChangeSearch', async (req, res, next) => {
         let avResultList = [];
         for (let i = 0; i < dates.length; i++) {
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
-            console.log(reasons[0].changeSearchResult.tgqReasons);
+            if (!reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList) {
+                throw dates[i].departureDate + " 无可改签航班";
+            }
             avResultList.push({ //每一个节点为一个航线对
                 "depAirportCode": os[i].depAirportCode,
                 "arrAirportCode": os[i].arrAirportCode,
@@ -232,12 +234,11 @@ router.post('/ChangeSearch', async (req, res, next) => {
             "avResultList": avResultList
         });
     } catch (e) {
-        console.log(e);
         return Utils.renderApiResult(res, {
             "version": "1.0.0",
             "status": {
                 "code": 10018,
-                "errorMsg": "查询改签航班失败"
+                "errorMsg": e
             }
         })
     }
