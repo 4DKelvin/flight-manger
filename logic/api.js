@@ -97,7 +97,7 @@ router.post('/ChangeBook', async (req, res, next) => {
             let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
             });
-            console.log(changeInfo);
+            console.log(reason.changeFlightSegmentList,uniqueKey);
             let params = {
                 orderNo: os[i].orderNo,
                 changeCauseId: reason.code,
