@@ -128,7 +128,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                 return e.gqFee;
             }).join('+')).toFixed(2),//改期支付金额
         })
-    } catch (e)
+    } catch (e){
         console.log(e);
         return Utils.renderApiResult(res, {
             "version": "1.0.0",
