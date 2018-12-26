@@ -91,7 +91,9 @@ router.post('/ChangeBook', async (req, res, next) => {
             let uniqueKey = dates[i].changeFlightCabinDtoList[0].key;
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].oriDepartDate);
             let reason = reasons[0].changeSearchResult.tgqReasons[0];
-            console.log(reasons);
+            if (!reason.changeFlightSegmentList) {
+                throw "改签航班已经失效,请重新下单";
+            }
             let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
             });
@@ -131,13 +133,12 @@ router.post('/ChangeBook', async (req, res, next) => {
                 return e.gqFee;
             }).join('+')).toFixed(2),//改期支付金额
         })
-    } catch (e){
-        console.log(e);
+    } catch (e) {
         return Utils.renderApiResult(res, {
             "version": "1.0.0",
             "status": {
                 "code": 10019,
-                "errorMsg": "无法提交改签需求"
+                "errorMsg": e.toString()
             }
         })
     }
@@ -230,6 +231,7 @@ router.post('/ChangeSearch', async (req, res, next) => {
             "avResultList": avResultList
         });
     } catch (e) {
+        console.log(e);
         return Utils.renderApiResult(res, {
             "version": "1.0.0",
             "status": {
