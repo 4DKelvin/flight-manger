@@ -8,6 +8,125 @@ let ChangeOrder = require('../model/change');
 let cheerio = require('cheerio');
 
 
+router.post('/ChangeOrderInfo', async (req, res, next) => {
+        let orderNo = req.body.orderNo;
+        let orders = await groupDetail(orderNo);
+        try {
+            let os = [];
+            if (orders.orderId) {
+                for (let date in orders.flights) {
+                    os.push(orders.flights[date]);
+                }
+            }
+            let status = {
+                "初始状态": 0,
+                "订单待确认": 1,
+                "订座成功等待支付": 2,
+                "订单确认成功待支付": 3,
+                "支付成功等待出票": 4,
+                "出票完成": 5,
+                "出票失败": 6,
+                "订单取消": 7,
+                "退款完成": -1,
+                "退款中": -1,
+                "未知状态": -1
+            };
+
+            Utils.renderApiResult(res, {
+                "version": "1.0.0",
+                "status": {
+                    "code": 0,
+                    "errorMsg": null
+                },
+                "orderNo": orderNo,//订单号
+                "orderStatus": status[os[0].orderStatus],
+                "tripType": "RT",//OW:单程;RT:往返;MT:多段
+                "totalPrice": eval(os.map((o) => {
+                    return o.orderTotalPrice
+                }).join('+')).toFixed(2),//订单总价
+                "changeReason": [ //可申请改期的原因
+                    {
+                        "code": 5,
+                        "desc": "我要改变行程计划，我要改航班",
+                        "type": 1  //1 自愿 2 非自愿
+                    },
+                    {
+                        "code": 6,
+                        "desc": "填错名字、选错日期、选错航班",
+                        "type": 1 //1 自愿 2 非自愿
+                    },
+                    {
+                        "code": 8,
+                        "desc": "其它",
+                        "type": 1  //1 自愿 2 非自愿
+                    },
+                    {
+                        "code": 7,
+                        "desc": "航班延误或取消、航班时刻变更",
+                        "type": 2  //1 自愿 2 非自愿
+                    }
+                ],
+                "changeSegmentList": os.map((o, i) => {
+                    return {
+                        "flightNum": o.flightNo,
+                        "cabin": "Y",
+                        "childCabin": "Y",
+                        "depCityCode": "",
+                        "arrCityCode": "",
+                        "depCity": "",
+                        "arrCity": "",
+                        "depAirportCode": o.flightDepartureCode,
+                        "arrAirportCode": o.flightArrivalCode,
+                        "depAirport": "",
+                        "arrAirport": "",
+                        "refundAmount": o.refundAmount,//单人航段退票金额
+                        "refundFee": o.refundFee,//单人航段退票手续费
+                        "departureDate": Utils.formatDate(o.flightDate),
+                        "departureTime": Utils.formatTime(o.flightDepartureTime),
+                        "arrivalDate": Utils.formatDate(o.flightDate),
+                        "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                        "segmentType": 1,
+                        "sequenceNum": i + 1,
+                        "price": o.orderTotalPrice,
+                        "fuelTax": o.orderFuelTax,
+                        "airportTax": o.orderConstructionFee
+                    };
+                }),
+                "changePassengerList": [  //可改期的乘机人列表
+                    {
+                        "uniqueKey": 1, //乘机人序号
+                        "name": os[0].passengerName,//姓名
+                        "cardType": "NI",//证件类型
+                        "cardNum": os[0].passengerIdentify, //证件号码
+                        "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                        "birthday": "", //出生日期
+                    }
+                ],
+                "canChangeList": os.map((o, i) => { //可改期乘机人、可改期航段映射
+                    return {
+                        "uniqueKey": i,
+                        "segmentIndex":
+                            {
+                                "flightNum": o.flightNo, //航段航班号
+                                "segmentType": 1, //航程索引
+                                "sequenceNum": i + 1//航段索引
+                            }
+                    }
+                })
+            });
+        } catch (e) {
+            Utils.renderApiResult(res, {
+                "version": "1.0.0",
+                "status": {
+                    "code": 10015,
+                    "errorMsg": "订单没找到"
+                }
+            })
+        }
+
+    }
+);
+
 router.post('/ChangePay', async (req, res, next) => {
     try {
         let orderNo = req.body.orderNo;
