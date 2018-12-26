@@ -97,7 +97,9 @@ router.post('/ChangeBook', async (req, res, next) => {
             let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
             });
-            console.log(reason.changeFlightSegmentList,uniqueKey);
+            if (!changeInfo) {
+                throw "Key " + uniqueKey + " 没有找到"
+            }
             let params = {
                 orderNo: os[i].orderNo,
                 changeCauseId: reason.code,
@@ -113,7 +115,6 @@ router.post('/ChangeBook', async (req, res, next) => {
                 endTime: changeInfo.endTime
             };
             let changeRes = await Api.change(params);
-            console.log(changeRes);
             params.changeOrderId = changeRes[0].id;
             params.qgId = changeRes[0].changeApplyResult.qgId;
             params.changeOrderTicket = changeRes[0].ticketNum;
