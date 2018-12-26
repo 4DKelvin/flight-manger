@@ -1,4 +1,4 @@
-const plane_controlLog = require('../db.js').plane_controlLog;
+const plane_controlLog = require('../db.js').plane_log;
 
 module.exports = {
     insert: function (objJson) {

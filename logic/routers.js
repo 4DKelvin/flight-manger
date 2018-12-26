@@ -4,7 +4,7 @@ let Order = require('../model/order');
 let Utils = require('../lib/utils');
 let Api = require('../lib/flight');
 let Customer = require('../model/customer');
-let ControlLog = require('../model/controlLog')
+let ControlLog = require('../model/log')
 
 
 router.use(function (req, res, next) {

@@ -43,7 +43,7 @@ module.exports = {
         certificatesNo: String,
         periodOfVali: Date
     }),
-    plane_controlLog: mongoose.model('plane_controlLog', {
+    plane_log: mongoose.model('plane_controlLog', {
         name: String,
         dateTime: Number,
         control: String,
