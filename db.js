@@ -45,10 +45,7 @@ module.exports = {
     }),
     plane_controlLog: mongoose.model('plane_controlLog', {
         name: String,
-        dateTime: {
-            type: Date,
-            default: Date.now
-        },
+        dateTime: Number,
         control: String,
         orderNo: String,
         groupId: String
