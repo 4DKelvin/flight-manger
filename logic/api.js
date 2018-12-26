@@ -89,6 +89,7 @@ router.post('/ChangeBook', async (req, res, next) => {
         let groupId = "TAN" + new Date().getTime();
         for (let i = 0; i < dates.length; i++) {
             let uniqueKey = dates[i].changeFlightCabinDtoList[0].key;
+            console.log(dates[i].departureDate);
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
             let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
