@@ -91,7 +91,8 @@ router.post('/ChangeBook', async (req, res, next) => {
             let uniqueKey = dates[i].changeFlightCabinDtoList[0].key;
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].oriDepartDate);
             let reason = reasons[0].changeSearchResult.tgqReasons[0];
-            let changeInfo = reasons.changeFlightSegmentList.find(function (e) {
+            console.log(reason.changeFlightSegmentList);
+            let changeInfo = reason.changeFlightSegmentList.find(function (e) {
                 if (e.uniqKey === uniqueKey) return e;
             });
             let params = {
