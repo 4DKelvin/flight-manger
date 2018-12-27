@@ -50,7 +50,7 @@ module.exports = {
         orderNo: String,
         groupId: String
     }),
-    plane_change_order: mongoose.model('plane_controlLog', {
+    plane_change_order: mongoose.model('plane_change_order', {
         orderNo: String,
         orderStatus: String,
         changeOrderId: String,
