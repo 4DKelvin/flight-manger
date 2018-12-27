@@ -157,6 +157,7 @@ router.post('/ChangePay', async (req, res, next) => {
                     }
                 })
             } catch (e) {
+                console.log(e);
                 Utils.renderApiResult(res, {
                     "version": "1.0.0", //版本号
                     "status": {
