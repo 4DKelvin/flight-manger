@@ -229,6 +229,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                     endTime: changeInfo.endTime
                 };
                 let changeRes = await Api.change(params);
+                console.log(changeRes[0]);
                 params.changeOrderId = changeRes[0].id;
                 params.qgId = changeRes[0].changeApplyResult.gqId;
                 params.changeOrderTicket = changeRes[0].ticketNum;
