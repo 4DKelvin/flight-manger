@@ -353,6 +353,7 @@ router.post('/ChangeSearch', async (req, res, next) => {
             "avResultList": avResultList
         });
     } catch (e) {
+        console.log(e);
         return Utils.renderApiResult(res, {
             "version": "1.0.0",
             "status": {
