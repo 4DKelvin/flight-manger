@@ -292,7 +292,7 @@ router.post('/ChangeSearch', async (req, res, next) => {
         for (let i = 0; i < dates.length; i++) {
             let local = os.find((o) => {
                 console.log(Utils.formatDate(o.flightDate), dates[i].departureDate);
-                if (Utils.formatDate(o.flightDate) === dates[i].departureDate) return o;
+                if (Utils.formatDate(o.depAirportCode) === dates[i].depAirportCode) return o;
             });
             let reasons = await Api.changeReasons(local.orderNo, dates[i].departureDate);
             if (!reasons[0].changeSearchResult.tgqReasons) {
