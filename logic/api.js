@@ -229,6 +229,9 @@ router.post('/ChangeBook', async (req, res, next) => {
                     endTime: changeInfo.endTime
                 };
                 let changeRes = await Api.change(params);
+                if(!changeRes[0].changeApplyResult.gqId){
+                    throw "改航班改签申请已经提交,请取消后再申请"
+                }
                 params.changeOrderId = changeRes[0].id;
                 params.qgId = changeRes[0].changeApplyResult.gqId;
                 params.changeOrderTicket = changeRes[0].ticketNum;
@@ -236,8 +239,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                 await ChangeOrder.insert(params);
                 cOrders.push(params);
             } catch (e) {
-                console.log(e);
-                throw "Key " + dates[i].changeFlightCabinDtoList[0].key + " 没有找到";
+                throw e;
             }
         }
         Utils.renderApiResult(res, {
