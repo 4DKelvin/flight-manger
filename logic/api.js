@@ -211,7 +211,7 @@ router.post('/ChangeBook', async (req, res, next) => {
             try {
                 let changeInfo = await cKey.get(dates[i].changeFlightCabinDtoList[0].key);
                 let local = os.find((o) => {
-                    if (o.orderNo === dates[i].departureDate) return changeInfo.orderNo;
+                    if (o.orderNo === changeInfo.orderNo) return o;
                 });
                 let params = {
                     orderNo: local.orderNo,
@@ -291,7 +291,6 @@ router.post('/ChangeSearch', async (req, res, next) => {
         let avResultList = [];
         for (let i = 0; i < dates.length; i++) {
             let local = os.find((o) => {
-                console.log(o.flightDepartureCode, dates[i].depAirportCode);
                 if (o.flightDepartureCode === dates[i].depAirportCode) return o;
             });
             let reasons = await Api.changeReasons(local.orderNo, dates[i].departureDate);
