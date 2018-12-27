@@ -232,6 +232,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                 await ChangeOrder.insert(params);
                 cOrders.push(params);
             } catch (e) {
+                console.log(e);
                 throw "Key " + dates[i].changeFlightCabinDtoList[0].key + " 没有找到";
             }
         }
