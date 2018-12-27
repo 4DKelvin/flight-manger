@@ -229,7 +229,6 @@ router.post('/ChangeBook', async (req, res, next) => {
                     endTime: changeInfo.endTime
                 };
                 let changeRes = await Api.change(params);
-                console.log(changeRes[0]);
                 params.changeOrderId = changeRes[0].id;
                 params.qgId = changeRes[0].changeApplyResult.gqId;
                 params.changeOrderTicket = changeRes[0].ticketNum;
@@ -1003,7 +1002,6 @@ router.post('/BookingOrder', async (req, res, next) => {
     let bookingStart = bookings.start;
     let bookingEnd = bookings.end;
     let groupId = "TAN" + new Date().getTime();
-    console.log(identify);
     try {
         if (bookingStart && bookingEnd) {
             let order = await Api.order(name, identify, birthday, sex, bookingStart);
