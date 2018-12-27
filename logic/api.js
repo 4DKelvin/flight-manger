@@ -148,7 +148,9 @@ router.post('/ChangePay', async (req, res, next) => {
             try {
                 for (let i = 0; i < orders.length; i++) {
                     let r = await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee.toString())
-                    console.log(r);
+                    if (Number(r.code) !== 0) {
+                        throw r.errMsg;
+                    }
                 }
                 Utils.renderApiResult(res, {
                     "version": "1.0.0", //版本号
@@ -230,7 +232,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                     endTime: changeInfo.endTime
                 };
                 let changeRes = await Api.change(params);
-                if(!changeRes[0].changeApplyResult.gqId){
+                if (!changeRes[0].changeApplyResult.gqId) {
                     throw "改航班改签申请已经提交,请取消后再申请"
                 }
                 params.changeOrderId = changeRes[0].id;
