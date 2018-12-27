@@ -212,10 +212,10 @@ router.post('/ChangeBook', async (req, res, next) => {
                 let changeInfo = cKey.get(dates[i].changeFlightCabinDtoList[0].key);
                 let params = {
                     orderNo: os[i].orderNo,
-                    changeCauseId: reason.code,
-                    passengerIds: reasons[0].id,
-                    applyRemarks: reason.msg,
-                    uniqKey: uniqueKey,
+                    changeCauseId: changeInfo.changeCauseId,
+                    passengerIds: changeInfo.passengerIds,
+                    applyRemarks: changeInfo.applyRemarks,
+                    uniqKey: changeInfo.uniqKey,
                     gqFee: changeInfo.gqFee,
                     upgradeFee: changeInfo.upgradeFee,
                     flightNo: changeInfo.flightNo,
@@ -232,7 +232,6 @@ router.post('/ChangeBook', async (req, res, next) => {
                 await ChangeOrder.insert(params);
                 cOrders.push(params);
             } catch (e) {
-                console.log(e);
                 throw "Key " + dates[i].changeFlightCabinDtoList[0].key + " 没有找到";
             }
         }
@@ -288,13 +287,17 @@ router.post('/ChangeSearch', async (req, res, next) => {
         let avResultList = [];
         for (let i = 0; i < dates.length; i++) {
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
-            console.log(reasons[0]);
             if (!reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList) {
                 throw dates[i].departureDate + " 无可改签航班";
             }
             let flights = reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList;
             for (let x = 0; x < flights.length; x++) {
-                await cKey.set(flights[x].uniqKey, flights[x]);
+                let item = JSON.parse(JSON.stringify(flights[x]));
+                item.changeCauseId = reason.code;
+                item.passengerIds = reasons[0].id;
+                item.applyRemarks = reason.msg;
+                item.uniqKey = uniqueKey;
+                await cKey.set(item.uniqKey, item);
             }
             avResultList.push({ //每一个节点为一个航线对
                 "depAirportCode": os[i].depAirportCode,
