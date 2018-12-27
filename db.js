@@ -72,5 +72,9 @@ module.exports = {
     booking_key: mongoose.model('booking_key', {
         name: String,
         content: String
+    }),
+    change_key: mongoose.model('change_key', {
+        name: String,
+        content: String
     })
 };

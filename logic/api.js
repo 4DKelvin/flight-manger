@@ -4,6 +4,7 @@ let Api = require('../lib/flight');
 let Utils = require('../lib/utils');
 let Order = require('../model/order');
 let Key = require('../model/key');
+let cKey = require('../model/ckey');
 let ChangeOrder = require('../model/change');
 let cheerio = require('cheerio');
 
@@ -207,39 +208,32 @@ router.post('/ChangeBook', async (req, res, next) => {
         let cOrders = [];
         let groupId = "TAN" + new Date().getTime();
         for (let i = 0; i < dates.length; i++) {
-            let uniqueKey = dates[i].changeFlightCabinDtoList[0].key;
-            let reasons = await Api.changeReasons(os[i].orderNo, dates[i].oriDepartDate);
-            let reason = reasons[0].changeSearchResult.tgqReasons[0];
-            if (!reason.changeFlightSegmentList) {
-                throw dates[i].oriDepartDate + "改签航班已经失效,请重新下单";
+            try {
+                let changeInfo = cKey.get(dates[i].changeFlightCabinDtoList[0].key);
+                let params = {
+                    orderNo: os[i].orderNo,
+                    changeCauseId: reason.code,
+                    passengerIds: reasons[0].id,
+                    applyRemarks: reason.msg,
+                    uniqKey: uniqueKey,
+                    gqFee: changeInfo.gqFee,
+                    upgradeFee: changeInfo.upgradeFee,
+                    flightNo: changeInfo.flightNo,
+                    cabinCode: changeInfo.cabinCode,
+                    startDate: changeInfo.changeDate,
+                    startTime: changeInfo.startTime,
+                    endTime: changeInfo.endTime
+                };
+                let changeRes = await Api.change(params);
+                params.changeOrderId = changeRes[0].id;
+                params.qgId = changeRes[0].changeApplyResult.qgId;
+                params.changeOrderTicket = changeRes[0].ticketNum;
+                params.groupId = groupId;
+                await ChangeOrder.insert(params);
+                cOrders.push(params);
+            } catch (e) {
+                throw "Key " + dates[i].changeFlightCabinDtoList[0].key + " 没有找到";
             }
-            let changeInfo = reason.changeFlightSegmentList.find(function (e) {
-                if (e.uniqKey === uniqueKey) return e;
-            });
-            if (!changeInfo) {
-                throw "Key " + uniqueKey + " 没有找到"
-            }
-            let params = {
-                orderNo: os[i].orderNo,
-                changeCauseId: reason.code,
-                passengerIds: reasons[0].id,
-                applyRemarks: reason.msg,
-                uniqKey: uniqueKey,
-                gqFee: changeInfo.gqFee,
-                upgradeFee: changeInfo.upgradeFee,
-                flightNo: changeInfo.flightNo,
-                cabinCode: changeInfo.cabinCode,
-                startDate: changeInfo.changeDate,
-                startTime: changeInfo.startTime,
-                endTime: changeInfo.endTime
-            };
-            let changeRes = await Api.change(params);
-            params.changeOrderId = changeRes[0].id;
-            params.qgId = changeRes[0].changeApplyResult.qgId;
-            params.changeOrderTicket = changeRes[0].ticketNum;
-            params.groupId = groupId;
-            await ChangeOrder.insert(params);
-            cOrders.push(params);
         }
         Utils.renderApiResult(res, {
             "version": "1.0.0",
@@ -296,10 +290,14 @@ router.post('/ChangeSearch', async (req, res, next) => {
             if (!reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList) {
                 throw dates[i].departureDate + " 无可改签航班";
             }
+            let flights = reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList;
+            for (let x = 0; x < flights.length; x++) {
+                await cKey.set(flights[x].uniqKey, flights[x]);
+            }
             avResultList.push({ //每一个节点为一个航线对
                 "depAirportCode": os[i].depAirportCode,
                 "arrAirportCode": os[i].arrAirportCode,
-                "tripFlightList": reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList.map((f) => {
+                "tripFlightList": flights.map((f) => {
                     return {
                         "carrier": "MU",
                         "flightNum": f.actFlightNo,
