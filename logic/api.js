@@ -288,7 +288,9 @@ router.post('/ChangeSearch', async (req, res, next) => {
         let avResultList = [];
         for (let i = 0; i < dates.length; i++) {
             let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
-            console.log(reasons);
+            if(!reasons[0].changeSearchResult.tgqReasons){
+                throw reasons[0].changeSearchResult.changeSearchResult.reason;
+            }
             if (!reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList) {
                 throw dates[i].departureDate + " 无可改签航班";
             }
