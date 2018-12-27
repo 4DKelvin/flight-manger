@@ -147,7 +147,8 @@ router.post('/ChangePay', async (req, res, next) => {
         } else {
             try {
                 for (let i = 0; i < orders.length; i++) {
-                    await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee.toString())
+                    let r = await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee.toString())
+                    console.log(r);
                 }
                 Utils.renderApiResult(res, {
                     "version": "1.0.0", //版本号
