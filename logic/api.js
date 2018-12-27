@@ -210,8 +210,11 @@ router.post('/ChangeBook', async (req, res, next) => {
         for (let i = 0; i < dates.length; i++) {
             try {
                 let changeInfo = await cKey.get(dates[i].changeFlightCabinDtoList[0].key);
+                let local = os.find((o) => {
+                    if (o.orderNo === dates[i].departureDate) return changeInfo.orderNo;
+                });
                 let params = {
-                    orderNo: os[i].orderNo,
+                    orderNo: local.orderNo,
                     changeCauseId: changeInfo.changeCauseId,
                     passengerIds: changeInfo.passengerIds,
                     applyRemarks: changeInfo.applyRemarks,
@@ -287,8 +290,12 @@ router.post('/ChangeSearch', async (req, res, next) => {
     try {
         let avResultList = [];
         for (let i = 0; i < dates.length; i++) {
-            let reasons = await Api.changeReasons(os[i].orderNo, dates[i].departureDate);
-            if(!reasons[0].changeSearchResult.tgqReasons){
+            let local = os.find((o) => {
+                console.log(o.flightDate, dates[i].departureDate);
+                if (o.flightDate === dates[i].departureDate) return o;
+            });
+            let reasons = await Api.changeReasons(local.orderNo, dates[i].departureDate);
+            if (!reasons[0].changeSearchResult.tgqReasons) {
                 throw reasons[0].changeSearchResult.reason;
             }
             if (!reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList) {
@@ -300,11 +307,12 @@ router.post('/ChangeSearch', async (req, res, next) => {
                 item.changeCauseId = reasons[0].changeSearchResult.tgqReasons[0].code;
                 item.passengerIds = reasons[0].id;
                 item.applyRemarks = reasons[0].changeSearchResult.tgqReasons[0].msg;
+                item.orderNo = local.orderNo;
                 await cKey.set(item.uniqKey, item);
             }
             avResultList.push({ //每一个节点为一个航线对
-                "depAirportCode": os[i].depAirportCode,
-                "arrAirportCode": os[i].arrAirportCode,
+                "depAirportCode": local.depAirportCode,
+                "arrAirportCode": local.arrAirportCode,
                 "tripFlightList": flights.map((f) => {
                     return {
                         "carrier": "MU",
@@ -325,18 +333,18 @@ router.post('/ChangeSearch', async (req, res, next) => {
                                 "key": f.uniqKey,//标识航班、仓位唯一索引
                                 "cabin": f.cabinStatus,//仓位
                                 "childCabin": "Y",//儿童仓位
-                                "price": os[i].orderOriginPrice,//票面价
-                                "printPrice": os[i].orderTotalPrice,//仓位报价
-                                "chdPrice": os[i].orderTotalPrice,//儿童仓位报价
-                                "chdPrintPrice": os[i].orderTotalPrice,//儿童票面价
-                                "infPrice": os[i].orderTotalPrice,//婴儿仓位报价
+                                "price": local.orderOriginPrice,//票面价
+                                "printPrice": local.orderTotalPrice,//仓位报价
+                                "chdPrice": local.orderTotalPrice,//儿童仓位报价
+                                "chdPrintPrice": local.orderTotalPrice,//儿童票面价
+                                "infPrice": local.orderTotalPrice,//婴儿仓位报价
                                 "seatNumber": 'A',//座位数
-                                "childFuelTax": os[i].orderFuelTax,//儿童燃油税
-                                "infantFuelTax": os[i].orderFuelTax,//婴儿燃油税
-                                "adultFuelTax": os[i].orderFuelTax,//成人燃油税
-                                "airportTaxInf": os[i].orderConstructionFee,//婴儿基建费
-                                "airportTaxChd": os[i].orderConstructionFee,//儿童基建费
-                                "airportTax": os[i].orderConstructionFee,//成人基建费
+                                "childFuelTax": local.orderFuelTax,//儿童燃油税
+                                "infantFuelTax": local.orderFuelTax,//婴儿燃油税
+                                "adultFuelTax": local.orderFuelTax,//成人燃油税
+                                "airportTaxInf": local.orderConstructionFee,//婴儿基建费
+                                "airportTaxChd": local.orderConstructionFee,//儿童基建费
+                                "airportTax": local.orderConstructionFee,//成人基建费
                                 "changeFeeAdt": f.gqFee,//成人改期费,
                                 "diffPriceAdt": f.adultUFee,//成人差价
                                 "payAmountAdt": f.gqFee,//成人实际支付价
