@@ -293,10 +293,9 @@ router.post('/ChangeSearch', async (req, res, next) => {
             let flights = reasons[0].changeSearchResult.tgqReasons[0].changeFlightSegmentList;
             for (let x = 0; x < flights.length; x++) {
                 let item = JSON.parse(JSON.stringify(flights[x]));
-                item.changeCauseId = reason.code;
+                item.changeCauseId = reasons[0].changeSearchResult.tgqReasons[0].code;
                 item.passengerIds = reasons[0].id;
-                item.applyRemarks = reason.msg;
-                item.uniqKey = uniqueKey;
+                item.applyRemarks = reasons[0].changeSearchResult.tgqReasons[0].msg;
                 await cKey.set(item.uniqKey, item);
             }
             avResultList.push({ //每一个节点为一个航线对
