@@ -230,7 +230,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                 };
                 let changeRes = await Api.change(params);
                 params.changeOrderId = changeRes[0].id;
-                params.qgId = changeRes[0].changeApplyResult.qgId;
+                params.qgId = changeRes[0].changeApplyResult.gqId;
                 params.changeOrderTicket = changeRes[0].ticketNum;
                 params.groupId = groupId;
                 await ChangeOrder.insert(params);
