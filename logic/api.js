@@ -135,7 +135,7 @@ router.post('/ChangePay', async (req, res, next) => {
         let orders = await ChangeOrder.find({groupId: orderNo});
         let total = eval(orders.map((e) => {
             return e.gqFee;
-        }).join('+'));
+        }).join('+')).toFixed(2);
         if (Number(amount) != Number(total)) {
             return Utils.renderApiResult(res, {
                 "version": "1.0.0",
@@ -147,7 +147,7 @@ router.post('/ChangePay', async (req, res, next) => {
         } else {
             try {
                 for (let i = 0; i < orders.length; i++) {
-                    await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee)
+                    await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee.toFixed(2))
                 }
                 Utils.renderApiResult(res, {
                     "version": "1.0.0", //版本号
