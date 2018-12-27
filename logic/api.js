@@ -210,6 +210,7 @@ router.post('/ChangeBook', async (req, res, next) => {
         for (let i = 0; i < dates.length; i++) {
             try {
                 let changeInfo = cKey.get(dates[i].changeFlightCabinDtoList[0].key);
+                console.log(dates[i].changeFlightCabinDtoList[0].key,changeInfo);
                 let params = {
                     orderNo: os[i].orderNo,
                     changeCauseId: changeInfo.changeCauseId,
