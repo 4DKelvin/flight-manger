@@ -1278,7 +1278,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         flights[end.flightNum] = {
                             "depCode": end.dpt, //出发机场三字码
                             "arrCode": end.arr, //到达机场三字码
-                            "date": end.date, //出发日期
+                            "date": params.returnDate, //出发日期
                             "dptTime": end.dptTime.replace(":", ""), //出发时间
                             "arrTime": end.arrTime.replace(":", ""), //到达时间
                             "carrier": end.carrier, //航司二字码
