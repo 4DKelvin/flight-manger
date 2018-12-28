@@ -19,7 +19,7 @@ module.exports = {
             keys.findOne({name: key}).lean().exec(function (err, data) {
                 try {
                     if (err) reject(err);
-                    else resolve(data.content);
+                    else resolve(JSON.parse(Utils.decodeBase64(data.content)));
                 } catch (e) {
                     reject(e);
                 }

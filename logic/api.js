@@ -989,7 +989,7 @@ router.post('/OrderInfo', async (req, res, next) => {
 router.post('/BookingOrder', async (req, res, next) => {
     let bookings;
     try {
-        bookings = JSON.parse(Utils.decodeBase64(await Key.get(req.body.bookingKey)));
+        bookings = await Key.get(req.body.bookingKey);
     } catch (e) {
         Utils.renderApiResult(res, {
             "version": "1.0.0",
@@ -1115,7 +1115,7 @@ router.post('/BookingOrder', async (req, res, next) => {
 });
 
 router.post('/CheckPrice', async (req, res, next) => {
-    let params = JSON.parse(Utils.decodeBase64(req.body.verify.productId));
+    let params = await Key.get(req.body.verify.productId);
     let prices = await new Promise((resolve, reject) => {
         Promise.all([
             singlePrice(params.sdpt, params.sarr, params.sd, params.st, params.sn),
@@ -1445,6 +1445,18 @@ router.post('/SearchAV', async (req, res, next) => {
                         }
                     };
                     let productId = Utils.encodeBase64(start.flightNum + end.flightNum + new Date().getTime());
+                    await Key.set(productId, {
+                        sarr: start.arr,
+                        sdpt: start.dpt,
+                        earr: end.arr,
+                        edpt: end.dpt,
+                        st: start.dptTime,
+                        et: end.dptTime,
+                        sd: params.date,
+                        ed: params.returnDate,
+                        sn: start.flightNum,
+                        en: end.flightNum
+                    });
                     products[productId] = {
                         "productKey": productId,
                         "productName": "经济仓报价",
