@@ -1128,7 +1128,7 @@ router.post('/CheckPrice', async (req, res, next) => {
     });
     let startPrice = prices[0];
     let endPrice = prices[1];
-    let key = ("bk"+params.sdpt+ params.sarr+ new Date().getTime()).toUpperCase();
+    let key = ("bk" + params.sdpt + params.sarr + new Date().getTime()).toUpperCase();
     await Key.set(key, Utils.encodeBase64(new Date().getTime().toString()), {
         start: startPrice.booking,
         end: endPrice.booking,
@@ -1444,18 +1444,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    let productId = Utils.encodeBase64(JSON.stringify({
-                        sarr: start.arr,
-                        sdpt: start.dpt,
-                        earr: end.arr,
-                        edpt: end.dpt,
-                        st: start.dptTime,
-                        et: end.dptTime,
-                        sd: params.date,
-                        ed: params.returnDate,
-                        sn: start.flightNum,
-                        en: end.flightNum
-                    }));
+                    let productId = Utils.encodeBase64(start.flightNum + end.flightNum + new Date().getTime());
                     products[productId] = {
                         "productKey": productId,
                         "productName": "经济仓报价",
