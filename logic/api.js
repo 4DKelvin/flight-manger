@@ -1447,10 +1447,6 @@ router.post('/SearchAV', async (req, res, next) => {
                     let productId = Utils.encodeBase64(JSON.stringify({
                         sarr: start.arr,
                         sdpt: start.dpt,
-                        earr: end.arr,
-                        edpt: end.dpt,
-                        st: start.dptTime,
-                        et: end.dptTime,
                         sd: params.date,
                         ed: params.returnDate,
                         sn: start.flightNum,
