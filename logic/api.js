@@ -1445,7 +1445,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    let productId = Utils.encodeBase64(md5(JSON.stringify({
+                    let productId = md5(JSON.stringify({
                         sarr: start.arr,
                         sdpt: start.dpt,
                         earr: end.arr,
@@ -1456,7 +1456,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         ed: params.returnDate,
                         sn: start.flightNum,
                         en: end.flightNum
-                    })));
+                    })).toString().toUpperCase();
                     await Key.set(productId, {
                         sarr: start.arr,
                         sdpt: start.dpt,
