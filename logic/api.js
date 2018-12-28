@@ -1128,7 +1128,8 @@ router.post('/CheckPrice', async (req, res, next) => {
     });
     let startPrice = prices[0];
     let endPrice = prices[1];
-    let key = await Key.set(Utils.encodeBase64(new Date().getTime().toString()), {
+    let key = ("bk"+params.sdpt+ params.sarr+ new Date().getTime()).toUpperCase();
+    await Key.set(key, Utils.encodeBase64(new Date().getTime().toString()), {
         start: startPrice.booking,
         end: endPrice.booking,
         sdate: params.sd,
@@ -1466,7 +1467,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         "adult": {
                             "printPrice": Number(startPrice.adult.printPrice) + Number(endPrice.adult.printPrice),
                             "salePrice": Number(startPrice.adult.salePrice) + Number(endPrice.adult.salePrice),
-                            "discount": startPrice.adult.discount/10,
+                            "discount": startPrice.adult.discount / 10,
                             "flightPrice": Number(startPrice.adult.flightPrice) + Number(endPrice.adult.flightPrice),
                             "fuelTax": Number(startPrice.adult.fuelTax) + Number(endPrice.adult.fuelTax),
                             "airportFee": Number(startPrice.adult.airportFee) + Number(endPrice.adult.airportFee),
@@ -1475,7 +1476,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         "child": {
                             "printPrice": Number(startPrice.child.printPrice) + Number(endPrice.child.printPrice),
                             "salePrice": Number(startPrice.child.salePrice) + Number(endPrice.child.salePrice),
-                            "discount": startPrice.child.discount/10,
+                            "discount": startPrice.child.discount / 10,
                             "flightPrice": Number(startPrice.child.flightPrice) + Number(endPrice.child.flightPrice),
                             "fuelTax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax),
                             "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
@@ -1484,7 +1485,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         "infant": {
                             "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
                             "salePrice": Number(startPrice.infant.salePrice) + Number(endPrice.infant.salePrice),
-                            "discount": startPrice.infant.discount/10,
+                            "discount": startPrice.infant.discount / 10,
                             "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
                             "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
                             "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
