@@ -1444,12 +1444,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    let productId = Utils.encodeBase64(JSON.stringify({
-                        sd: params.date,
-                        ed: params.returnDate,
-                        sn: start.flightNum,
-                        en: end.flightNum
-                    }));
+                    let productId = Utils.encodeBase64(JSON.stringify([params.date, params.returnDate, start.flightNum, end.flightNum]));
                     await Key.set(productId, {
                         sarr: start.arr,
                         sdpt: start.dpt,
