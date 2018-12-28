@@ -1,5 +1,6 @@
 let express = require('express');
 let router = express.Router();
+let md5 = require('md5-node');
 let Api = require('../lib/flight');
 let Utils = require('../lib/utils');
 let Order = require('../model/order');
@@ -1444,7 +1445,18 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    let productId = Utils.encodeBase64(JSON.stringify([params.date, params.returnDate, start.flightNum, end.flightNum]));
+                    let productId = Utils.encodeBase64(md5(JSON.stringify({
+                        sarr: start.arr,
+                        sdpt: start.dpt,
+                        earr: end.arr,
+                        edpt: end.dpt,
+                        st: start.dptTime,
+                        et: end.dptTime,
+                        sd: params.date,
+                        ed: params.returnDate,
+                        sn: start.flightNum,
+                        en: end.flightNum
+                    })));
                     await Key.set(productId, {
                         sarr: start.arr,
                         sdpt: start.dpt,
