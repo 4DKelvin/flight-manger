@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/plane');
+mongoose.connect('mongodb://flight:PXW6bjU36TBdk4k3@192.168.7.201:27017/flight');
 
 module.exports = {
     plane_orders: mongoose.model('plane_orders', {
