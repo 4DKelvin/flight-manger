@@ -1118,6 +1118,7 @@ router.post('/BookingOrder', async (req, res, next) => {
 
 router.post('/CheckPrice', async (req, res, next) => {
     let params = await Key.get(req.body.verify.productId);
+    console.log(params);
     let prices = await new Promise((resolve, reject) => {
         Promise.all([
             singlePrice(params.sdpt, params.sarr, params.sd, params.st, params.sn),
