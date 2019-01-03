@@ -5,7 +5,7 @@ module.exports = {
     set: function (key, value) {
         return new Promise(function (resolve, reject) {
             let item = {
-                name: key || Utils.encodeBase64(new Date().getTime().toString()),
+                name: key,
                 content: Utils.encodeBase64(JSON.stringify(value))
             };
             new keys(item).save(function (err, res) {
