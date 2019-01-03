@@ -1243,7 +1243,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         "stopCity": start.stopCityName, //经停城市
                         "stopCode": start.stopCityCode //经停机场三字码
                     },
-                    "codeShare": start.codeShare, //主飞航班号，为空表示非共享
+                    "codeShare": start.codeShare ? start.codeShare : "非共享", //主飞航班号，为空表示非共享
                     "cabinYPrice": start.barePrice, //Y基准价舱价
                     "cabinFPrice": start.barePrice, //F舱基准价
                     "cabinCPrice": start.barePrice, //C舱基准价
@@ -1292,7 +1292,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 "stopCity": end.stopCityName, //经停城市
                                 "stopCode": end.stopCityCode //经停机场三字码
                             },
-                            "codeShare": end.codeShare, //主飞航班号，为空表示非共享
+                            "codeShare": end.codeShare?end.codeShare:"非共享", //主飞航班号，为空表示非共享
                             "cabinYPrice": end.barePrice, //Y基准价舱价
                             "cabinFPrice": end.barePrice, //F舱基准价
                             "cabinCPrice": end.barePrice, //C舱基准价
@@ -1445,7 +1445,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
                     };
-                    let productId =Utils.encodeBase64(md5(JSON.stringify({
+                    let productId = Utils.encodeBase64(md5(JSON.stringify({
                         sarr: start.arr,
                         sdpt: start.dpt,
                         earr: end.arr,
@@ -1504,8 +1504,8 @@ router.post('/SearchAV', async (req, res, next) => {
                             "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
                             "tax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax) + Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee)
                         },
-                        "tgqRuleId": startPrice.tgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.tgqRuleId, //退改签key，对应tgqRules
-                        "backTgqRuleId": startPrice.backTgqRuleId + "-" + startIndex + "-" + endIndex + "-" + endPrice.backTgqRuleId //往返回程退改签key 对应tgqRules
+                        "tgqRuleId": "", //退改签key，对应tgqRules
+                        "backTgqRuleId": "" //往返回程退改签key 对应tgqRules
                     };
                     flightProductGroup.push({
                         "flight": [
