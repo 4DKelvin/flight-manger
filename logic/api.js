@@ -1131,6 +1131,8 @@ router.post('/CheckPrice', async (req, res, next) => {
     let startPrice = prices[0];
     let endPrice = prices[1];
     let key = Utils.encodeBase64([params.sdpt, params.sarr, params.sd, params.st, params.sn, params.ed, params.et, params.en])
+    console.log(key);
+    return;
     await Key.set(key, {
         start: startPrice.booking,
         end: endPrice.booking,
