@@ -1004,13 +1004,14 @@ router.post('/BookingOrder', async (req, res, next) => {
     let name = req.body.passengers[0].name;
     let identify = req.body.passengers[0].cardNum;
     let birthday = req.body.passengers[0].birthday;
+    let cardType = req.body.passengers[0].cardType;
     let sex = req.body.passengers[0].gender == 'M' ? 0 : 1;
     let bookingStart = bookings.start;
     let bookingEnd = bookings.end;
     let groupId = "TAN" + new Date().getTime();
     try {
         if (bookingStart && bookingEnd) {
-            let order = await Api.order(name, identify, birthday, sex, bookingStart);
+            let order = await Api.order(name, cardType, identify, birthday, sex, bookingStart);
             let orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
                 throw "去程预约失败";
@@ -1292,7 +1293,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 "stopCity": end.stopCityName, //经停城市
                                 "stopCode": end.stopCityCode //经停机场三字码
                             },
-                            "codeShare": end.codeShare?end.codeShare:"非共享", //主飞航班号，为空表示非共享
+                            "codeShare": end.codeShare ? end.codeShare : "非共享", //主飞航班号，为空表示非共享
                             "cabinYPrice": end.barePrice, //Y基准价舱价
                             "cabinFPrice": end.barePrice, //F舱基准价
                             "cabinCPrice": end.barePrice, //C舱基准价
@@ -1785,94 +1786,6 @@ router.post('/change', async (req, res, next) => {
     }
 });
 
-
-router.post('/booking', async (req, res, next) => {
-    try {
-        let start = JSON.parse(Utils.decodeBase64(req.body.startTicket));
-        let end = JSON.parse(Utils.decodeBase64(req.body.endTicket));
-        let name = req.body.name;
-        let identify = req.body.identify;
-        let birthday = req.body.birthday;
-        let sex = req.body.sex;
-
-        try {
-            let groupId = "TAN" + new Date().getTime();
-            let bookingStart = await Api.booking(start.dep, start.arr, start.date, start.time, start.flightNo, start.price);
-            let bookingEnd = await Api.booking(end.dep, end.arr, end.date, end.time, end.flightNo, end.price);
-            if (bookingStart && bookingEnd) {
-                let order = await Api.order(name, identify, birthday, sex, bookingStart);
-                let orderInfo = await Api.orderDetail(order.orderNo);
-                let arrTime = orderInfo.flightInfo[0].deptTime;
-                await Order.insertOrUpdate({
-                    groupId: groupId,
-                    orderId: order.id,
-                    orderNo: orderInfo.detail.orderNo,
-                    orderStatus: orderInfo.detail.status,
-                    orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-                    orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                    orderConstructionFee: bookingStart.priceInfo.arf,
-                    orderFuelTax: bookingStart.priceInfo.tof,
-                    orderRealPrice: orderInfo.passengerTypes[0].realPrice,
-                    orderAgent: bookingStart.extInfo.clientId,
-                    passengerName: orderInfo.passengers[0].name,
-                    passengerType: orderInfo.passengers[0].type,
-                    passengerIdentifyType: orderInfo.passengers[0].cardType,
-                    passengerIdentify: identify,
-                    passengerTicketNo: orderInfo.passengers[0].ticketNo,
-                    passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
-                    flightNo: orderInfo.flightInfo[0].flightNum,
-                    flightDate: Date.parse(start.date),
-                    flightDeparture: orderInfo.flightInfo[0].dptCity,
-                    flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
-                    flightDepartureTime: Date.parse(start.date + ' ' + start.time),
-                    flightArrival: orderInfo.flightInfo[0].arrCity,
-                    flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
-                    flightArrivalTime: Date.parse(start.date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
-                    flightCabin: orderInfo.flightInfo[0].cabin,
-                    notice: orderInfo.other.tgqMsg,
-                });
-                order = await Api.order(name, identify, birthday, sex, bookingEnd);
-                orderInfo = await Api.orderDetail(order.orderNo);
-                arrTime = orderInfo.flightInfo[0].deptTime;
-                await Order.insertOrUpdate({
-                    groupId: groupId,
-                    orderId: order.id,
-                    orderNo: orderInfo.detail.orderNo,
-                    orderStatus: orderInfo.detail.status,
-                    orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-                    orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
-                    orderConstructionFee: bookingEnd.priceInfo.arf,
-                    orderFuelTax: bookingEnd.priceInfo.tof,
-                    orderRealPrice: orderInfo.passengerTypes[0].realPrice,
-                    orderAgent: bookingEnd.extInfo.clientId,
-                    passengerName: orderInfo.passengers[0].name,
-                    passengerType: orderInfo.passengers[0].type,
-                    passengerIdentifyType: orderInfo.passengers[0].cardType,
-                    passengerIdentify: identify,
-                    passengerTicketNo: orderInfo.passengers[0].ticketNo,
-                    passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
-                    flightNo: orderInfo.flightInfo[0].flightNum,
-                    flightDate: Date.parse(end.date),
-                    flightDeparture: orderInfo.flightInfo[0].dptCity,
-                    flightDepartureCode: orderInfo.flightInfo[0].dptAirportCode,
-                    flightDepartureTime: Date.parse(end.date + ' ' + end.time),
-                    flightArrival: orderInfo.flightInfo[0].arrCity,
-                    flightArrivalCode: orderInfo.flightInfo[0].arrAirportCode,
-                    flightArrivalTime: Date.parse(end.date + ' ' + arrTime.substr(arrTime.lastIndexOf('-') + 1)),
-                    flightCabin: orderInfo.flightInfo[0].cabin,
-                    notice: orderInfo.other.tgqMsg,
-                });
-                Utils.renderJson(res, await groupDetail(groupId));
-            } else {
-                Utils.renderJsonError(res, "預約失敗，票價已更新，無發預約");
-            }
-        } catch (e) {
-            Utils.renderJsonError(res, "預約失敗,原因：" + e);
-        }
-    } catch (ex) {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
 
 async function singlePrice(dep, arr, date, time, flightNo) {
     try {
