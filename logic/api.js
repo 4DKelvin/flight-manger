@@ -1011,6 +1011,7 @@ router.post('/BookingOrder', async (req, res, next) => {
     let groupId = "TAN" + new Date().getTime();
     try {
         if (bookingStart && bookingEnd) {
+            console.log(bookingStart);
             let order = await Api.order(name, cardType, identify, birthday, sex, bookingStart);
             let orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
@@ -1047,7 +1048,6 @@ router.post('/BookingOrder', async (req, res, next) => {
                 flightCabin: orderInfo.flightInfo[0].cabin,
                 notice: orderInfo.other.tgqMsg,
             });
-            console.log(bookingEnd);
             order = await Api.order(name, identify, birthday, sex, bookingEnd);
             orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
