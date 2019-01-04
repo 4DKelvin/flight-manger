@@ -991,7 +991,6 @@ router.post('/BookingOrder', async (req, res, next) => {
     let bookings;
     try {
         bookings = await Key.get(req.body.bookingKey);
-        console.log(bookings);
     } catch (e) {
         Utils.renderApiResult(res, {
             "version": "1.0.0",
