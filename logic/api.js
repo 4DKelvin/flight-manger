@@ -1047,8 +1047,8 @@ router.post('/BookingOrder', async (req, res, next) => {
                 flightCabin: orderInfo.flightInfo[0].cabin,
                 notice: orderInfo.other.tgqMsg,
             });
-            order = await Api.order(name, identify, birthday, sex, bookingEnd);
             console.log(bookingEnd);
+            order = await Api.order(name, identify, birthday, sex, bookingEnd);
             orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
                 throw "返程预约失败";
