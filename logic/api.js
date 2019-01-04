@@ -1011,7 +1011,6 @@ router.post('/BookingOrder', async (req, res, next) => {
     let groupId = "TAN" + new Date().getTime();
     try {
         if (bookingStart && bookingEnd) {
-            console.log(bookingStart);
             let order = await Api.order(name, cardType, identify, birthday, sex, bookingStart);
             let orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
