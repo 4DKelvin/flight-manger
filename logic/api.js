@@ -1048,7 +1048,7 @@ router.post('/BookingOrder', async (req, res, next) => {
                 flightCabin: orderInfo.flightInfo[0].cabin,
                 notice: orderInfo.other.tgqMsg,
             });
-            order = await Api.order(name, identify, birthday, sex, bookingEnd);
+            order = await Api.order(name, cardType, identify, birthday, sex, bookingEnd);
             orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
                 throw "返程预约失败";
@@ -1336,7 +1336,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             }),
                             "canRefund": false, //选传，是否可退
                             "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
-                            "refundText":"不退", //退票文本，必传
+                            "refundText": "不退", //退票文本，必传
                             "canChange": false, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
                             "changeText": "不改", //改签文本，必传
