@@ -330,7 +330,7 @@ router.post('/ChangeSearch', async (req, res, next) => {
                         "depTerminal": f.dptTerminal,//出发机场航站楼
                         "arrTerminal": f.arrTerminal,//到达机场航站楼
                         "planeModule": "320",//机型
-                        "codeShare": f.share,//是否共享
+                        "codeShare":"",//是否共享
                         "actFlightNum": f.actFlightNo,//实际承运航班号
                         "stops": f.stopFlightInfo.stopCityInfoList.length,//经停次数
                         "cabin_total_price": os[i].orderOriginPrice,//经济舱全价
@@ -911,7 +911,7 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "arrAirport": "", //到达机场名称
                 "flightTime": "", //飞行时间,可空
                 "actFlightNum": "", //实际承运航班号,可空
-                "codeShare": false, //是否共享航班,可空
+                "codeShare": "", //是否共享航班,可空
                 "meal": true, //餐食
                 "correct": "", //准点率,可空
                 "airCompany": "中国东方航空", //航司名称
@@ -1182,15 +1182,7 @@ router.post('/CheckPrice', async (req, res, next) => {
                 "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
                 "tax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax) + Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee)
             },
-            "infant": {
-                "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
-                "salePrice": Number(startPrice.infant.salePrice) + Number(endPrice.infant.salePrice),
-                "discount": startPrice.infant.discount,
-                "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
-                "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
-                "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
-                "tax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax) + Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee)
-            }
+            "infant": {}
         }
     });
 });
@@ -1244,7 +1236,7 @@ router.post('/SearchAV', async (req, res, next) => {
                         "stopCity": start.stopCityName, //经停城市
                         "stopCode": start.stopCityCode //经停机场三字码
                     },
-                    "codeShare": start.codeShare ? start.codeShare : "非共享", //主飞航班号，为空表示非共享
+                    "codeShare": "", //主飞航班号，为空表示非共享
                     "cabinYPrice": start.barePrice, //Y基准价舱价
                     "cabinFPrice": start.barePrice, //F舱基准价
                     "cabinCPrice": start.barePrice, //C舱基准价
@@ -1293,7 +1285,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 "stopCity": end.stopCityName, //经停城市
                                 "stopCode": end.stopCityCode //经停机场三字码
                             },
-                            "codeShare": end.codeShare ? end.codeShare : "非共享", //主飞航班号，为空表示非共享
+                            "codeShare": "", //主飞航班号，为空表示非共享
                             "cabinYPrice": end.barePrice, //Y基准价舱价
                             "cabinFPrice": end.barePrice, //F舱基准价
                             "cabinCPrice": end.barePrice, //C舱基准价
@@ -1360,17 +1352,9 @@ router.post('/SearchAV', async (req, res, next) => {
                             "airportFee": Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee),
                             "tax": Number(startPrice.child.fuelTax) + Number(endPrice.child.fuelTax) + Number(startPrice.child.airportFee) + Number(endPrice.child.airportFee)
                         },
-                        "infant": {
-                            "printPrice": Number(startPrice.infant.printPrice) + Number(endPrice.infant.printPrice),
-                            "salePrice": Number(startPrice.infant.salePrice) + Number(endPrice.infant.salePrice),
-                            "discount": (startPrice.adult.discount / 10).toFixed(2),
-                            "flightPrice": Number(startPrice.infant.flightPrice) + Number(endPrice.infant.flightPrice),
-                            "fuelTax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax),
-                            "airportFee": Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee),
-                            "tax": Number(startPrice.infant.fuelTax) + Number(endPrice.infant.fuelTax) + Number(startPrice.infant.airportFee) + Number(endPrice.infant.airportFee)
-                        },
-                        "tgqRuleId": "", //退改签key，对应tgqRules
-                        "backTgqRuleId": "" //往返回程退改签key 对应tgqRules
+                        "infant": {},
+                        "tgqRuleId": -1, //退改签key，对应tgqRules
+                        "backTgqRuleId": -1 //往返回程退改签key 对应tgqRules
                     };
                     flightProductGroup.push({
                         "flight": [
