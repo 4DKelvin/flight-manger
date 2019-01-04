@@ -1321,7 +1321,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
+                            "signText": "", //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "child": {
@@ -1342,7 +1342,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
+                            "signText": "", //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "infant": null,
@@ -1362,14 +1362,14 @@ router.post('/SearchAV', async (req, res, next) => {
                             }),
                             "canRefund": false, //选传，是否可退
                             "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
-                            "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "refundText": "不退", //退票文本，必传
                             "canChange": false, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
+                            "changeText": "不改", //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
+                            "signText": "", //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "child": {
@@ -1386,11 +1386,11 @@ router.post('/SearchAV', async (req, res, next) => {
                             "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": false, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
+                            "changeText": "", //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
+                            "signText": "", //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "infant": null,
