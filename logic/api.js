@@ -989,6 +989,7 @@ router.post('/OrderInfo', async (req, res, next) => {
 
 router.post('/BookingOrder', async (req, res, next) => {
     let bookings;
+    console.log(req.body);
     try {
         bookings = await Key.get(req.body.bookingKey);
     } catch (e) {
