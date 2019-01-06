@@ -1301,51 +1301,70 @@ router.post('/SearchAV', async (req, res, next) => {
                             "dataExt": {}
                         }
                     }
-
                     rules[startPrice.tgqRuleId] = {
                         "adult": {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
-                                    "changeFee": -1,
-                                    "refundFee": -1,
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
-                            "canRefund": false, //选传，是否可退
+                            "canRefund": true, //选传，是否可退
                             "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
-                            "refundText": "不退", //退票文本，必传
-                            "canChange": false, //是否支持改签，选传
+                            "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": "不改", //改签文本，必传
+                            "changeText": cheerio.load(startPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": "", //是否签转，必传
+                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "child": {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
-                                    "changeFee": -1,
-                                    "refundFee": -1,
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
-                            "canRefund": false, //选传，是否可退
+                            "canRefund": true, //选传，是否可退
                             "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
-                            "refundText": "不退", //退票文本，必传
-                            "canChange": false, //是否支持改签，选传
+                            "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": "不改", //改签文本，必传
+                            "changeText": cheerio.load(startPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": "", //是否签转，必传
+                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
-                        "infant": null,
+                        "infant": {
+                            "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
+                                    "time": e.time
+                                }
+                            }),
+                            "canRefund": true, //选传，是否可退
+                            "refundRule": startPrice.booking.tgqShowData.returnRule, //退票规则，选传
+                            "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "canChange": true, //是否支持改签，选传
+                            "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
+                            "changeText": cheerio.load(startPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
+                            "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
+                            "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
+                            "tgqCabinType": "经济舱", //退改舱等
+                            "signText": cheerio.load(startPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
+                            "allowChange": false //是否允许签转
+                        },
                         "specialRuleInfo": { //特殊票务说明
                             "specialRuleText": startPrice.booking.policyInfo.specialRule
                         }
@@ -1354,46 +1373,66 @@ router.post('/SearchAV', async (req, res, next) => {
                         "adult": {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
-                                    "changeFee": -1,
-                                    "refundFee": -1,
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
-                            "canRefund": false, //选传，是否可退
+                            "canRefund": true, //选传，是否可退
                             "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
-                            "refundText": "不退", //退票文本，必传
-                            "canChange": false, //是否支持改签，选传
+                            "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": "不改", //改签文本，必传
+                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": "", //是否签转，必传
+                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
                         "child": {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
-                                    "changeFee": -1,
-                                    "refundFee": -1,
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
                             }),
-                            "canRefund": false, //选传，是否可退
+                            "canRefund": true, //选传，是否可退
                             "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
-                            "refundText": "不退", //退票文本，必传
-                            "canChange": false, //是否支持改签，选传
+                            "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": "不改", //改签文本，必传
+                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
-                            "signText": "", //是否签转，必传
+                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
                             "allowChange": false //是否允许签转
                         },
-                        "infant": null,
+                        "infant": {
+                            "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
+                                return {
+                                    "changeFee": e.changeFee,
+                                    "returnFee": e.returnFee,
+                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
+                                    "time": e.time
+                                }
+                            }),
+                            "canRefund": true, //选传，是否可退
+                            "refundRule": endPrice.booking.tgqShowData.returnRule, //退票规则，选传
+                            "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
+                            "canChange": true, //是否支持改签，选传
+                            "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
+                            "changeText": cheerio.load(endPrice.booking.tgqShowData.tgqText).text(), //改签文本，必传
+                            "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
+                            "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
+                            "tgqCabinType": "经济舱", //退改舱等
+                            "signText": cheerio.load(endPrice.booking.tgqShowData.tgqPercentText).text(), //是否签转，必传
+                            "allowChange": false //是否允许签转
+                        },
                         "specialRuleInfo": { //特殊票务说明
                             "specialRuleText": endPrice.booking.policyInfo.specialRule
                         }
@@ -1484,250 +1523,6 @@ router.post('/SearchAV', async (req, res, next) => {
             "tgqRules": rules
         }
     });
-});
-
-router.get('/flights', async (req, res, next) => {
-    if (req.query.dep && req.query.arr && req.query.start && req.query.end) {
-        let dep = req.query.dep.toUpperCase();
-        let arr = req.query.arr.toUpperCase();
-        let start = req.query.start;
-        let end = req.query.end;
-        try {
-            let result = await Api.queryFlight(dep, arr, start);
-            let result2 = await Api.queryFlight(arr, dep, end);
-            if (result && result.flightInfos && result.flightInfos.length &&
-                result2 && result2.flightInfos && result2.flightInfos.length) {
-                let response = {};
-                response[req.query.start] = {};
-                response[req.query.end] = {};
-                result.flightInfos.forEach((flight) => {
-                    response[req.query.start][flight.dptTime] = {
-                        flightNum: flight.flightNum,
-                        flightTimes: flight.flightTimes,
-                        flightTypeFullName: flight.flightTypeFullName,
-                        flightDistance: flight.distance,
-                        flightCarrier: flight.carrier,
-                        flightBarePrice: flight.barePrice,
-                        flightDiscount: flight.discount,
-                        planeType: flight.planetype,
-                        arr: flight.arr,
-                        arrAirport: flight.arrAirport,
-                        arrTime: flight.arrTime,
-                        arrTerminal: flight.arrTerminal,
-                        dep: flight.dpt,
-                        depAirport: flight.dptAirport,
-                        depTime: flight.dptTime,
-                        depTerminal: flight.dptTerminal,
-                        priceTicket: Utils.encodeBase64(JSON.stringify({
-                            dep: flight.dpt,
-                            arr: flight.arr,
-                            date: req.query.start,
-                            time: flight.dptTime,
-                            num: flight.flightNum
-                        })),
-                        priceUrl: req.protocol + "://" + req.get('host') + "/api/prices?ticket=" + Utils.encodeBase64(JSON.stringify({
-                            dep: flight.dpt,
-                            arr: flight.arr,
-                            date: req.query.start,
-                            time: flight.dptTime,
-                            num: flight.flightNum
-                        }))
-                    };
-                });
-                result2.flightInfos.forEach((flight) => {
-                    response[req.query.end][flight.dptTime] = {
-                        flightNum: flight.flightNum,
-                        flightTimes: flight.flightTimes,
-                        flightTypeFullName: flight.flightTypeFullName,
-                        flightDistance: flight.distance,
-                        flightCarrier: flight.carrier,
-                        flightBarePrice: flight.barePrice,
-                        flightDiscount: flight.discount,
-                        planeType: flight.planetype,
-                        arr: flight.arr,
-                        arrAirport: flight.arrAirport,
-                        arrTime: flight.arrTime,
-                        arrTerminal: flight.arrTerminal,
-                        dep: flight.dpt,
-                        depAirport: flight.dptAirport,
-                        depTime: flight.dptTime,
-                        depTerminal: flight.dptTerminal,
-                        queryTicket: Utils.encodeBase64(JSON.stringify({
-                            dep: flight.dpt,
-                            arr: flight.arr,
-                            date: req.query.end,
-                            time: flight.dptTime,
-                            num: flight.flightNum
-                        })),
-                        queryUrl: req.protocol + "://" + req.get('host') + "/api/prices?ticket=" + Utils.encodeBase64(JSON.stringify({
-                            dep: flight.dpt,
-                            arr: flight.arr,
-                            date: req.query.end,
-                            time: flight.dptTime,
-                            num: flight.flightNum
-                        }))
-                    };
-                });
-                Utils.renderJson(res, response);
-            } else {
-                Utils.renderJsonError(res, "查詢失敗，無航班信息");
-            }
-        } catch (e) {
-            Utils.renderJsonError(res, "查詢失敗，原因：" + e);
-        }
-    } else {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
-
-router.get('/prices', async (req, res, next) => {
-    try {
-        let params = JSON.parse(Utils.decodeBase64(req.query.ticket));
-        let dep = params.dep.toUpperCase();
-        let arr = params.arr.toUpperCase();
-        let flightNo = params.num.toUpperCase();
-        let time = params.time;
-        let date = params.date;
-        try {
-            let result = await Api.queryPrice(dep, arr, date, flightNo);
-            if (result && result.vendors && result.vendors.length) {
-                Utils.renderJson(res, result.vendors.map((vendor) => {
-                    return {
-                        dep: dep,
-                        arr: arr,
-                        date: date,
-                        price: vendor.price,
-                        client: vendor.domain,
-                        cabin: vendor.cabin,
-                        time: time,
-                        flightNo: flightNo,
-                        ticket: Utils.encodeBase64(JSON.stringify({
-                            dep: dep, arr: arr, date: date, time: time, flightNo: flightNo, price: vendor
-                        }))
-                    };
-                }).sort(function (a, b) {
-                    return a.price - b.price;
-                })[0]);
-            } else {
-                Utils.renderJsonError(res, "無價格信息結果");
-            }
-        } catch (e) {
-            Utils.renderJsonError(res, "查詢失敗，原因：" + e);
-        }
-    } catch (ex) {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
-
-
-router.get('/order', async (req, res, next) => {
-    if (req.query.id) {
-        let orders = await new Promise((resolve, reject) => {
-            Order.query().where({groupId: req.query.id}).lean().exec((err, orders) => {
-                if (err) reject(err);
-                else resolve(orders);
-            })
-        });
-        try {
-            for (let key in orders) {
-                let order = await Api.orderDetail(orders[key].orderNo);
-                if (order) {
-                    await Order.insertOrUpdate({
-                        orderNo: order.detail.orderNo,
-                        orderStatus: order.detail.status,
-                        notice: order.other.tgqMsg,
-                        passengerTicketNo: order.passengers[0].ticketNo
-                    });
-                }
-            }
-            Utils.renderJson(res, await groupDetail(req.query.id));
-        } catch (e) {
-            Utils.renderJsonError(res, "查詢失敗，原因：" + e);
-        }
-    } else {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
-
-router.get('/refund', async (req, res, next) => {
-    if (req.query.order) {
-        let result = await Api.refundReasons(req.query.order);
-        Utils.renderJson(res, result[0].refundSearchResult.tgqReasons);
-    } else {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
-
-router.post('/refund', async (req, res, next) => {
-    if (req.query.order && req.body.code) {
-        try {
-
-            let result = await Api.refundReasons(req.query.order);
-            if (!result[0].refundSearchResult) {
-                Utils.renderJsonError(res, "此訂單已經申請退款");
-            } else {
-                let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
-                    if (Number(e.code) === Number(req.body.code)) return e;
-                });
-                Utils.renderJson(res, await Api.refund({
-                    "orderNo": req.query.order,
-                    "passengerIds": result[0].id,
-                    "refundCause": refundInfo.msg,
-                    "refundCauseId": refundInfo.code
-                }));
-            }
-        } catch (e) {
-            Utils.renderJsonError(res, "退票操作失敗，原因：" + e);
-        }
-    } else {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
-
-router.get('/change', async (req, res, next) => {
-    if (req.query.order && req.query.date) {
-        let result = await Api.changeReasons(req.query.order, req.query.date);
-        Utils.renderJson(res, result);
-    } else {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
-});
-
-router.post('/change', async (req, res, next) => {
-    if (req.query.order && req.query.date && req.body.unique) {
-        let result = await Api.changeReasons(req.query.order, req.query.date);
-        if (!result[0].changeSearchResult) {
-            Utils.renderJsonError(res, "此訂單已經申請改簽");
-        } else {
-            let reason = result[0].changeSearchResult.tgqReasons[0];
-            let changeInfo = reason.changeFlightSegmentList.find(function (e) {
-                if (e.uniqKey === req.body.unique) return e;
-            });
-            let changeRes = await Api.change({
-                orderNo: req.query.order,
-                changeCauseId: reason.code,
-                passengerIds: result[0].id,
-                applyRemarks: reason.msg,
-                uniqKey: req.body.unique,
-                gqFee: changeInfo.gqFee,
-                upgradeFee: changeInfo.upgradeFee,
-                flightNo: changeInfo.flightNo,
-                cabinCode: changeInfo.cabinCode,
-                startDate: req.query.date,
-                startTime: changeInfo.startTime,
-                endTime: changeInfo.endTime
-            });
-            Utils.renderJson(res, {
-                "orderNo": changeRes[0].changeApplyResult.orderNo,
-                "gqId": changeRes[0].changeApplyResult.gqId,
-                "passengerIds": result[0].id,
-                "totalAmount": changeInfo.allFee
-            });
-        }
-
-    } else {
-        Utils.renderJsonError(res, "參數錯誤");
-    }
 });
 
 
