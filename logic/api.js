@@ -94,16 +94,16 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "airportTax": o.orderConstructionFee
                     };
                 }),
-                "changePassengerList": [  //可改期的乘机人列表
-                    {
-                        "uniqueKey": 1, //乘机人序号
-                        "name": os[0].passengerName,//姓名
+                "changePassengerList": os.map((o, i) => {  //可改期的乘机人列表
+                    return {
+                        "uniqueKey": i, //乘机人序号
+                        "name": o.passengerName,//姓名
                         "cardType": "NI",//证件类型
-                        "cardNum": os[0].passengerIdentify, //证件号码
+                        "cardNum": o.passengerIdentify, //证件号码
                         "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
                         "birthday": "", //出生日期
                     }
-                ],
+                }),
                 "canChangeList": os.map((o, i) => { //可改期乘机人、可改期航段映射
                     return {
                         "uniqueKey": i,
