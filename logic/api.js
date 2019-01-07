@@ -1401,7 +1401,7 @@ router.post('/SearchAV', async (req, res, next) => {
                                 return {
                                     "changeFee": e.changeFee,
                                     "refundFee": e.returnFee,
-                                    "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
+                                    "timeText": e.time > 0 ? "起飞前" + e.time + "小时前" : "起飞前4小时后",
                                     "time": e.time
                                 }
                             }),
