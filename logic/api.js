@@ -645,7 +645,9 @@ router.post('/RefundSearch', async (req, res, next) => {
                         "sequenceNum": i + 1,
                         "price": o.orderTotalPrice,
                         "fuelTax": o.orderFuelTax,
-                        "airportTax": o.orderConstructionFee
+                        "airportTax": o.orderConstructionFee,
+                        "refundAmount":fee[i].refundAmount,
+                        "refundFee":fee[i].refundFee
                     }
                 })
             }]
@@ -1306,7 +1308,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
-                                    "returnFee": e.returnFee,
+                                    "refundFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
@@ -1327,7 +1329,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
-                                    "returnFee": e.returnFee,
+                                    "refundFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
@@ -1348,7 +1350,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "timeSharingChargeInfoList": startPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
-                                    "returnFee": e.returnFee,
+                                    "refundFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
@@ -1374,7 +1376,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
-                                    "returnFee": e.returnFee,
+                                    "refundFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
@@ -1395,7 +1397,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
-                                    "returnFee": e.returnFee,
+                                    "refundFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
@@ -1416,7 +1418,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "timeSharingChargeInfoList": endPrice.booking.tgqShowData.tgqPointCharges.map(function (e) {
                                 return {
                                     "changeFee": e.changeFee,
-                                    "returnFee": e.returnFee,
+                                    "refundFee": e.returnFee,
                                     "timeText": e.time > 0 ? "起飛前" + e.time + "小時前" : "起飛前4小時后",
                                     "time": e.time
                                 }
