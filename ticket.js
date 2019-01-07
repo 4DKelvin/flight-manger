@@ -12,6 +12,7 @@ setInterval(async () => {
                     orderNo: order.detail.orderNo,
                     orderStatus: order.detail.status,
                     notice: order.other.tgqMsg,
+                    passengerTicketTime: new Date().getTime(),
                     passengerTicketNo: order.passengers[0].ticketNo
                 }));
             } else {

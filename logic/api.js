@@ -646,8 +646,8 @@ router.post('/RefundSearch', async (req, res, next) => {
                         "price": o.orderTotalPrice,
                         "fuelTax": o.orderFuelTax,
                         "airportTax": o.orderConstructionFee,
-                        "refundAmount":fee[i].refundAmount,
-                        "refundFee":fee[i].refundFee
+                        "refundAmount": fee[i].refundAmount,
+                        "refundFee": fee[i].refundFee
                     }
                 })
             }]
@@ -767,6 +767,7 @@ router.post('/NotifyTicket', async (req, res, next) => {
                             "errorMsg": "" //失败具体原因
                         },
                         "orderNo": orderNo, //订单号
+                        "latestTicketTime": orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
                     });
                 } catch (e) {
                     Utils.renderApiResult(res, {
@@ -985,7 +986,9 @@ router.post('/OrderInfo', async (req, res, next) => {
         //     "expressFee": 20,//快递费
         //     "createTime": "2017-03-20 19:28:58"   //创建时间
         // },
-        "dataExt": {},
+        "dataExt": {
+            "ticketTime": orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
+        },
     });
 });
 

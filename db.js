@@ -17,6 +17,7 @@ module.exports = {
         passengerIdentifyType: String,
         passengerIdentify: String,
         passengerTicketNo: String,
+        passengerTicketTime: Number,
         passengerInsuranceNo: String,
         flightNo: String,
         flightDate: String,
