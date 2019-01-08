@@ -218,7 +218,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                 let local = os.find((o) => {
                     if (o.orderNo === changeInfo.orderNo) return o;
                 });
-                if(!local){
+                if (!local) {
                     throw "key 与 订单信息不匹配";
                 }
                 let params = {
@@ -479,7 +479,7 @@ router.post('/RefundConfirm', async (req, res, next) => {
         try {
             for (let i = 0; i < os.length; i++) {
                 let result = await Api.refundReasons(os[i].orderNo);
-                if (!result[0].refundSearchResult) {
+                if (!result[0].refundSearchResult || !result[0].refundSearchResult.tgqReasons.length) {
                     throw "此訂單已經申請退款";
                 } else {
                     let refundInfo = result[0].refundSearchResult.tgqReasons.find(function (e) {
@@ -530,7 +530,6 @@ router.post('/RefundConfirm', async (req, res, next) => {
                 ]
             });
         } catch (e) {
-            console.log(e);
             Utils.renderApiResult(res, {
                 "version": "1.0.0", //版本号
                 "status": {
