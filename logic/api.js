@@ -134,7 +134,6 @@ router.post('/ChangePay', async (req, res, next) => {
         let orderNo = req.body.orderNo;
         let amount = req.body.payAmount;
         let orders = await ChangeOrder.find({groupId: orderNo});
-        console.log(await ChangeOrder.find({}));
         let total = eval(orders.map((e) => {
             return e.gqFee;
         }).join('+'));
@@ -225,7 +224,7 @@ router.post('/ChangeBook', async (req, res, next) => {
                     passengerIds: changeInfo.passengerIds,
                     applyRemarks: changeInfo.applyRemarks,
                     uniqKey: changeInfo.uniqKey,
-                    gqFee: changeInfo.gqFee,
+                    gqFee: changeInfo.allFee,
                     upgradeFee: changeInfo.upgradeFee,
                     flightNo: changeInfo.flightNo,
                     cabinCode: changeInfo.cabinCode,
