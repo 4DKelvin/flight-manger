@@ -216,9 +216,11 @@ router.post('/ChangeBook', async (req, res, next) => {
             try {
                 let changeInfo = await cKey.get(dates[i].changeFlightCabinDtoList[0].key);
                 let local = os.find((o) => {
-                    console.log(o);
                     if (o.orderNo === changeInfo.orderNo) return o;
                 });
+                if(!local){
+                    throw "key 与 订单信息不匹配";
+                }
                 let params = {
                     orderNo: local.orderNo,
                     changeCauseId: changeInfo.changeCauseId,
