@@ -214,8 +214,8 @@ router.post('/ChangeBook', async (req, res, next) => {
         let groupId = "TAN" + new Date().getTime();
         for (let i = 0; i < dates.length; i++) {
             try {
-                console.log(dates[i].changeFlightCabinDtoList);
                 let changeInfo = await cKey.get(dates[i].changeFlightCabinDtoList[0].key);
+                console.log(changeInfo);
                 let local = os.find((o) => {
                     if (o.orderNo === changeInfo.orderNo) return o;
                 });
