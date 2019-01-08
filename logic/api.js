@@ -215,8 +215,8 @@ router.post('/ChangeBook', async (req, res, next) => {
         for (let i = 0; i < dates.length; i++) {
             try {
                 let changeInfo = await cKey.get(dates[i].changeFlightCabinDtoList[0].key);
-                console.log(changeInfo);
                 let local = os.find((o) => {
+                    console.log(o);
                     if (o.orderNo === changeInfo.orderNo) return o;
                 });
                 let params = {
