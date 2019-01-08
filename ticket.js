@@ -18,7 +18,8 @@ setInterval(async () => {
                 if (orders.every((e) => {
                     return !!e.passengerTicketNo
                 })) {
-                    Api.sendTicket(o);
+                    console.log(o);
+                    await Api.sendTicket(o);
                 }
 
             } else {
