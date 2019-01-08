@@ -1322,7 +1322,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": (changeText ? changeText : "").split("退票条件：")[0], //改签文本，必传
+                            "changeText": (changeText ? changeText : "").split("退票条件")[0], //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
@@ -1343,7 +1343,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": (changeText ? changeText : "").split("退票条件：")[0], //改签文本，必传
+                            "changeText": (changeText ? changeText : "").split("退票条件")[0], //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
@@ -1364,7 +1364,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "refundText": startPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": startPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": (changeText ? changeText : "").split("退票条件：")[0], //改签文本，必传
+                            "changeText": (changeText ? changeText : "").split("退票条件")[0], //改签文本，必传
                             "basePrice": startPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": startPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
@@ -1391,7 +1391,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": (changeText ? changeText : "").split("退票条件：")[0], //改签文本，必传
+                            "changeText": (changeText ? changeText : "").split("退票条件")[0], //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
@@ -1433,7 +1433,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "refundText": endPrice.booking.tgqShowData.returnText, //退票文本，必传
                             "canChange": true, //是否支持改签，选传
                             "changeRule": endPrice.booking.tgqShowData.changeRule, //改签规则，选传
-                            "changeText": (changeText ? changeText : "").split("退票条件：")[0], //改签文本，必传
+                            "changeText": (changeText ? changeText : "").split("退票条件")[0], //改签文本，必传
                             "basePrice": endPrice.booking.tgqShowData.basePrice, //退改基准价
                             "tgqCabin": endPrice.booking.tgqShowData.tgqCabin, //退改舱位
                             "tgqCabinType": "经济舱", //退改舱等
