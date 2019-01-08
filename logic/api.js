@@ -767,14 +767,14 @@ router.post('/NotifyTicket', async (req, res, next) => {
                             "errorMsg": "" //失败具体原因
                         },
                         "orderNo": orderNo, //订单号
-                        "latestTicketTime": orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
+                        "latestTicketTime": orders[1] && orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
                     });
                 } catch (e) {
                     Utils.renderApiResult(res, {
                         "version": "1.0.0", //版本号
                         "status": {
                             "code": "1006", //状态码 0-成功  非0-失败
-                            "errorMsg": e//失败具体原因
+                            "errorMsg": e.toString()//失败具体原因
                         },
                         "orderNo": orderNo, //订单号
                     });
@@ -987,7 +987,7 @@ router.post('/OrderInfo', async (req, res, next) => {
         //     "createTime": "2017-03-20 19:28:58"   //创建时间
         // },
         "dataExt": {
-            "ticketTime": orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
+            "ticketTime": orders[1] && orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
         },
     });
 });
