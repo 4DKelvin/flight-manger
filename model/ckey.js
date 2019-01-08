@@ -8,10 +8,13 @@ module.exports = {
                 name: key || Utils.encodeBase64(new Date().getTime().toString()),
                 content: Utils.encodeBase64(JSON.stringify(value))
             };
-            new keys(item).save(function (err, res) {
-                if (err) throw reject(err);
-                else resolve(item.name);
-            })
+            keys.remove({name:key}).exec(function (e, d) {
+                new keys(item).save(function (err, res) {
+                    if (err) throw reject(err);
+                    else resolve(item.name);
+                })
+            });
+
         })
     },
     get: function (key) {
