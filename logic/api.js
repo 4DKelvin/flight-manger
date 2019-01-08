@@ -421,6 +421,16 @@ router.post('/RefundInfo', async (req, res, next) => {
                     "ticketNo": os[0].passengerTicketNo,//票号
                     "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
                     "mobCountryCode": "86",
+                    "tickets": os.map((o, i) => {
+                        return {
+                            "ticketNo": o.passengerTicketNo,
+                            "segmentIndex": {
+                                "flightNum": o.flightNo,
+                                "segmentType": 1,
+                                "sequenceNum": i + 1
+                            }
+                        }
+                    }),
                     "flights":
                         os.map((o, i) => {
                             return {

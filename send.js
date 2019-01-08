@@ -3,7 +3,7 @@ const Api = require("./lib/flight");
 
 let main = async () => {
     let orders = await Order.find({
-        groupId: "TAN1545213127447"
+        groupId: "TAN1546936051616"
     });
     for (let i = 0; i < orders.length; i++) {
         console.log(await Api.sendTicket(orders[i]));
