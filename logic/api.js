@@ -135,6 +135,7 @@ router.post('/ChangePay', async (req, res, next) => {
         let amount = req.body.payAmount;
         let orders = await ChangeOrder.find({groupId: orderNo});
         let total = eval(orders.map((e) => {
+            console.log(e.gqFee);
             return e.gqFee;
         }).join('+'));
         if (Number(amount) != Number(total)) {
