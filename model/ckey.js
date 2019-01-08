@@ -8,7 +8,7 @@ module.exports = {
                 name: key || Utils.encodeBase64(new Date().getTime().toString()),
                 content: Utils.encodeBase64(JSON.stringify(value))
             };
-            keys.remove({name:key}).exec(function (e, d) {
+            keys.deleteOne({name:key}).exec(function (e, d) {
                 new keys(item).save(function (err, res) {
                     if (err) throw reject(err);
                     else resolve(item.name);
