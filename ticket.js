@@ -15,12 +15,7 @@ setInterval(async () => {
                     passengerTicketTime: new Date().getTime(),
                     passengerTicketNo: order.passengers[0].ticketNo
                 });
-                if (orders.every((e) => {
-                    return !!e.passengerTicketNo
-                })) {
-                    console.log(o);
-                    await Api.sendTicket(o);
-                }
+                await Api.sendTicket(o);
 
             } else {
                 await Order.insertOrUpdate({
