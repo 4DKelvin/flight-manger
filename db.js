@@ -63,6 +63,7 @@ module.exports = {
         uniqKey: String,
         qgId: String,
         gqFee: Number,
+        allFee: Number,
         upgradeFee: Number,
         flightNo: String,
         cabinCode: String,

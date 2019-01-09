@@ -135,7 +135,7 @@ router.post('/ChangePay', async (req, res, next) => {
         let amount = req.body.payAmount;
         let orders = await ChangeOrder.find({groupId: orderNo});
         let total = eval(orders.map((e) => {
-            return e.gqFee;
+            return e.allFee;
         }).join('+'));
         if (Number(amount) != Number(total)) {
             return Utils.renderApiResult(res, {
@@ -227,7 +227,8 @@ router.post('/ChangeBook', async (req, res, next) => {
                     passengerIds: changeInfo.passengerIds,
                     applyRemarks: changeInfo.applyRemarks,
                     uniqKey: changeInfo.uniqKey,
-                    gqFee: changeInfo.allFee,
+                    gqFee: changeInfo.gqFee,
+                    allFee: changeInfo.allFee,
                     upgradeFee: changeInfo.upgradeFee,
                     flightNo: changeInfo.flightNo,
                     cabinCode: changeInfo.cabinCode,
@@ -259,7 +260,7 @@ router.post('/ChangeBook', async (req, res, next) => {
             "subOrderNo": groupId,//改期订单号
             "orderStatus": 2, //改期单状态 见备注 改期枚举
             "payPrice": eval(cOrders.map((e) => {
-                return e.gqFee;
+                return e.allFee;
             }).join('+')).toFixed(2),//改期支付金额
         })
     } catch (e) {
