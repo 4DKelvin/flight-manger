@@ -148,7 +148,7 @@ router.post('/ChangePay', async (req, res, next) => {
         } else {
             try {
                 for (let i = 0; i < orders.length; i++) {
-                    let r = await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].gqFee.toString())
+                    let r = await Api.changePay(orders[i].orderNo, orders[i].qgId, orders[i].passengerIds, orders[i].allFee.toString())
                     if (Number(r.code) !== 0) {
                         throw r.errMsg;
                     }
