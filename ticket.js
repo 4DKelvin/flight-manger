@@ -15,8 +15,12 @@ setInterval(async () => {
                     passengerTicketTime: new Date().getTime(),
                     passengerTicketNo: order.passengers[0].ticketNo
                 });
-                await Api.sendTicket(o);
-
+                let os = await Order.find({groupId: local.groupId});
+                if (os.every((e) => {
+                    return !!e.passengerTicketNo;
+                })) {
+                    await Api.sendTicket(o);
+                }
             } else {
                 await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,
