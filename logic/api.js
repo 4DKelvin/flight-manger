@@ -355,15 +355,15 @@ router.post('/ChangeSearch', async (req, res, next) => {
                                 "airportTaxInf": local.orderConstructionFee,//婴儿基建费
                                 "airportTaxChd": local.orderConstructionFee,//儿童基建费
                                 "airportTax": local.orderConstructionFee,//成人基建费
-                                "changeFeeAdt": f.allFee,//成人改期费,
+                                "changeFeeAdt": f.gqFee,//成人改期费,
                                 "diffPriceAdt": f.adultUFee,//成人差价
-                                "payAmountAdt": f.gqFee,//成人实际支付价
-                                "changeFeeChd": f.allFee,//儿童改期费
+                                "payAmountAdt": f.allFee,//成人实际支付价
+                                "changeFeeChd": f.gqFee,//儿童改期费
                                 "diffPriceChd": f.adultUFee,//儿童差价
-                                "payAmountChd": f.gqFee,//儿童实际支付价
-                                "changeFeeInf": f.allFee,//婴儿改期费
+                                "payAmountChd": f.allFee,//儿童实际支付价
+                                "changeFeeInf": f.gqFee,//婴儿改期费
                                 "diffPriceInf": f.adultUFee,//婴儿差价
-                                "payAmountInf": f.gqFee//婴儿实际支付价
+                                "payAmountInf": f.allFee//婴儿实际支付价
                             }
                         ]
                     }
