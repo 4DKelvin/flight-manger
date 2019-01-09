@@ -392,6 +392,19 @@ router.post('/ChangeSearch', async (req, res, next) => {
 router.post('/RefundInfo', async (req, res, next) => {
     let orderNo = req.body.orderNo;
     let orders = await groupDetail(orderNo);
+    let status = {
+        "初始状态": 0,
+        "订单待确认": 1,
+        "订座成功等待支付": 2,
+        "订单确认成功待支付": 3,
+        "支付成功等待出票": 4,
+        "出票完成": 5,
+        "出票失败": 6,
+        "订单取消": 7,
+        "退款完成": -1,
+        "退款中": -1,
+        "未知状态": -1
+    };
     try {
         let os = [];
         if (orders.orderId) {
@@ -456,7 +469,7 @@ router.post('/RefundInfo', async (req, res, next) => {
                                 "price": o.orderTotalPrice,
                                 "fuelTax": o.orderFuelTax,
                                 "airportTax": o.orderConstructionFee,
-                                "status": 2,//退票状态
+                                "status": status[o.orderStatus],//退票状态
                                 "refundId": new Date().getTime(),
                                 "applyType": 1 //自愿退票1  非自愿退票2
                             }
