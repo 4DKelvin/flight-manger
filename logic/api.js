@@ -48,7 +48,10 @@ router.post('/ChangeInfo', async (req, res, next) => {
             "reason": 5,
             "reasonDesc": "我要改变行程计划，我要改航班",
             "refuseReason": "",
-            "changeSegmentList": os.map((o, i) => {
+            "changeSegmentList": orders.map((c, i) => {
+                let o = os.find((e)=>{
+                    return e.orderNo == c.orderNo;
+                });
                 return {
                     "flightNum": o.flightNo,
                     "cabin": "Y",
@@ -74,7 +77,10 @@ router.post('/ChangeInfo', async (req, res, next) => {
                     "airportTax": o.orderConstructionFee
                 };
             }),
-            "changePassengerList": os.map((o, i) => {  //可改期的乘机人列表
+            "changePassengerList": orders.map((c, i) => {  //可改期的乘机人列表
+                let o = os.find((e)=>{
+                    return e.orderNo == c.orderNo;
+                });
                 return {
                     "uniqueKey": i, //乘机人序号
                     "name": o.passengerName,//姓名
