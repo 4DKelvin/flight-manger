@@ -276,6 +276,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                 })
             });
         } catch (e) {
+            console.log(e);
             Utils.renderApiResult(res, {
                 "version": "1.0.0",
                 "status": {
