@@ -228,6 +228,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         return c && e.orderNo == c.orderNo;
                     });
                     if (!o) return {};
+                    console.log(c.startTime,c.endTime);
                     else return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
