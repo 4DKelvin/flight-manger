@@ -10,6 +10,155 @@ let ChangeOrder = require('../model/change');
 let cheerio = require('cheerio');
 
 
+router.post('/ChangeInfo', async (req, res, next) => {
+    let orderNo = req.body.orderNo;
+    let orders = await ChangeOrder.find({groupId: orderNo});
+    let source = await Order.findById(orders[0].orderNo);
+    let oos = await  groupDetail(source.groupId);
+    let os = [];
+    if (oos.orderId) {
+        for (let date in oos.flights) {
+            os.push(oos.flights[date]);
+        }
+    }
+    try {
+        let status = {
+            "初始状态": 0,
+            "订单待确认": 1,
+            "订座成功等待支付": 2,
+            "订单确认成功待支付": 3,
+            "支付成功等待出票": 4,
+            "出票完成": 5,
+            "出票失败": 6,
+            "订单取消": 7,
+            "退款完成": -1,
+            "退款中": -1,
+            "未知状态": -1,
+            "改签完成": 5
+        };
+
+        Utils.renderApiResult(res, {
+            "orderNo": source.groupId,
+            "subOrderNo": req.body.orderNo,
+            "orderStatus": status[source.orderStatus],
+            "totalPrice": eval(orders.map((e)=>{
+                return Number(e.allFee)
+            }).join('+')),
+            "applyType": 1,
+            "reason": 5,
+            "reasonDesc": "我要改变行程计划，我要改航班",
+            "refuseReason": "",
+            "changeSegmentList": os.map((o, i) => {
+                return {
+                    "flightNum": o.flightNo,
+                    "cabin": "Y",
+                    "childCabin": "Y",
+                    "depCityCode": "",
+                    "arrCityCode": "",
+                    "depCity": "",
+                    "arrCity": "",
+                    "depAirportCode": o.flightDepartureCode,
+                    "arrAirportCode": o.flightArrivalCode,
+                    "depAirport": "",
+                    "arrAirport": "",
+                    "refundAmount": o.refundAmount,//单人航段退票金额
+                    "refundFee": o.refundFee,//单人航段退票手续费
+                    "departureDate": Utils.formatDate(o.flightDate),
+                    "departureTime": Utils.formatTime(o.flightDepartureTime),
+                    "arrivalDate": Utils.formatDate(o.flightDate),
+                    "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                    "segmentType": 1,
+                    "sequenceNum": i + 1,
+                    "price": o.orderTotalPrice,
+                    "fuelTax": o.orderFuelTax,
+                    "airportTax": o.orderConstructionFee
+                };
+            }),
+            "changePassengerList": os.map((o, i) => {  //可改期的乘机人列表
+                return {
+                    "uniqueKey": i, //乘机人序号
+                    "name": o.passengerName,//姓名
+                    "cardType": "NI",//证件类型
+                    "cardNum": o.passengerIdentify, //证件号码
+                    "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                    "birthday": "", //出生日期
+                    "cardExpired": "",
+                    "cardIssuePlace": "",
+                    "mobCountryCode": "86",
+                    "tickets": [
+                        {
+                            "ticketNo": o.passengerTicketNo,
+                            "segmentIndex": {
+                                "segmentType": 1,
+                                "sequenceNum": 1+i
+                            }
+                        }
+                    ]
+                }
+            }),
+            "changeSegmentList": orders.map((c, i) => {
+                let o = os[i];
+                return {
+                    "flightNum": o.flightNo,
+                    "cabin": "Y",
+                    "childCabin": "Y",
+                    "depCityCode": "",
+                    "arrCityCode": "",
+                    "depCity": "",
+                    "arrCity": "",
+                    "depAirportCode": o.flightDepartureCode,
+                    "arrAirportCode": o.flightArrivalCode,
+                    "depAirport": "",
+                    "arrAirport": "",
+                    "refundAmount": o.refundAmount,//单人航段退票金额
+                    "refundFee": o.refundFee,//单人航段退票手续费
+                    "departureDate": Utils.formatDate(o.flightDate),
+                    "departureTime": Utils.formatTime(o.flightDepartureTime),
+                    "arrivalDate": Utils.formatDate(o.flightDate),
+                    "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                    "segmentType": 1,
+                    "sequenceNum": i + 1,
+                    "price": o.orderTotalPrice,
+                    "fuelTax": o.orderFuelTax,
+                    "airportTax": o.orderConstructionFee,
+                    "depTerminal": "",
+                    "arrTerminal": "",
+                    "carrier": "MU",
+                    "actCarrier": "",
+                    "actFlightNum": "",
+                    "codeShare": "false",
+                    "meal": false,
+                    "crossDays": "0",
+                    "stops": 0,
+                    "childFuelTax": 0,
+                    "infantFuelTax": 0,
+                    "adultFuelTax": 0,
+                    "airportTaxInf": 0,
+                    "airportTaxChd": 0,
+                    "changeFeeAdt": c.gqFee,
+                    "diffPriceAdt": c.allFee - c.gqFee,
+                    "payAmountAdt": c.allFee,
+                    "payAmountChd": "0",
+                    "tgqKey": c.uniqKey
+                }
+            }),
+            "version": "1.0.0",
+            "status": {
+                "code": 0
+            }
+        });
+    } catch (e) {
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 10015,
+                "errorMsg": "订单没找到"
+            }
+        })
+    }
+
+});
+
 router.post('/ChangeOrderInfo', async (req, res, next) => {
         let orderNo = req.body.orderNo;
         let orders = await groupDetail(orderNo);
@@ -31,7 +180,8 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                 "订单取消": 7,
                 "退款完成": -1,
                 "退款中": -1,
-                "未知状态": -1
+                "未知状态": -1,
+                "改签完成": 5
             };
 
             Utils.renderApiResult(res, {

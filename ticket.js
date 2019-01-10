@@ -8,6 +8,10 @@ setInterval(async () => {
         let order = await Api.orderDetail(local.orderNo);
         if (order) {
             if (local.passengerTicketNo !== order.passengers[0].ticketNo || local.orderStatus !== order.detail.status) {
+                let tag = 'flight.national.afterservice.ticketNoUpdate';
+                if (local.orderStatus !== order.detail.status) {
+                    tag = 'flight.national.afterservice.flightChange';
+                }
                 let o = await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,
                     orderStatus: order.detail.status,
@@ -19,13 +23,14 @@ setInterval(async () => {
                 if (os.every((e) => {
                     return !!e.passengerTicketNo;
                 })) {
-                    await Api.sendTicket(o);
+                    await Api.sendTicket(o, tag);
                 }
             } else {
                 await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,
                     orderStatus: order.detail.status,
                     notice: order.other.tgqMsg,
+                    passengerTicketTime: new Date().getTime(),
                     passengerTicketNo: order.passengers[0].ticketNo
                 })
             }
