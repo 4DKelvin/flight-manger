@@ -10,7 +10,7 @@ setInterval(async () => {
             if (local.passengerTicketNo !== order.passengers[0].ticketNo || local.orderStatus !== order.detail.status) {
                 let tag = 'flight.national.afterservice.ticketNoUpdate';
                 if (local.orderStatus !== order.detail.status) {
-                    tag = 'flight.national.afterservice.flightChange';
+                    tag = 'flight.national.afterservice.orderStatusNotify';
                 }
                 let o = await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,
