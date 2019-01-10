@@ -171,7 +171,8 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
             if (orders.orderId) {
                 for (let date in orders.flights) {
                     os.push(orders.flights[date]);
-                    co.push(await ChangeOrder.findById(orders.flights[date].orderNo));
+                    let cs = await ChangeOrder.findById(orders.flights[date].orderNo);
+                    if (cs) co.push(cs);
                 }
             }
             let status = {
