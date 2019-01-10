@@ -225,6 +225,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                 ],
                 "changeSegmentList": co.map((c, i) => {
                     let o = os.find((e) => {
+                        console.log(e,c);
                         return e.orderNo == c.orderNo;
                     });
                     if (!o) return {};
