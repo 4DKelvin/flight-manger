@@ -38,7 +38,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
             "orderNo": source.groupId,
             "subOrderNo": req.body.orderNo,
             "orderStatus": status[source.orderStatus],
-            "totalPrice": eval(orders.map((e)=>{
+            "totalPrice": eval(orders.map((e) => {
                 return Number(e.allFee)
             }).join('+')),
             "applyType": 1,
@@ -46,7 +46,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
             "reasonDesc": "我要改变行程计划，我要改航班",
             "refuseReason": "",
             "changeSegmentList": orders.map((c, i) => {
-                let o = os.find((e)=>{
+                let o = os.find((e) => {
                     return e.orderNo == c.orderNo;
                 });
                 return {
@@ -75,7 +75,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
                 };
             }),
             "changePassengerList": orders.map((c, i) => {  //可改期的乘机人列表
-                let o = os.find((e)=>{
+                let o = os.find((e) => {
                     return e.orderNo == c.orderNo;
                 });
                 return {
@@ -93,7 +93,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
                             "ticketNo": o.passengerTicketNo,
                             "segmentIndex": {
                                 "segmentType": 1,
-                                "sequenceNum": 1+i
+                                "sequenceNum": 1 + i
                             }
                         }
                     ]
@@ -165,11 +165,13 @@ router.post('/ChangeInfo', async (req, res, next) => {
 router.post('/ChangeOrderInfo', async (req, res, next) => {
         let orderNo = req.body.orderNo;
         let orders = await groupDetail(orderNo);
+        let co = [];
         try {
             let os = [];
             if (orders.orderId) {
                 for (let date in orders.flights) {
                     os.push(orders.flights[date]);
+                    co.push(await ChangeOrder.findById(orders.flights[date].orderNo));
                 }
             }
             let status = {
@@ -221,8 +223,12 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "type": 2  //1 自愿 2 非自愿
                     }
                 ],
-                "changeSegmentList": os.map((o, i) => {
-                    return {
+                "changeSegmentList": co.map((c, i) => {
+                    let o = os.find((e) => {
+                        return e.orderNo == c.orderNo;
+                    });
+                    if (!o) return {};
+                    else return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
                         "childCabin": "Y",
@@ -236,10 +242,10 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "arrAirport": "",
                         "refundAmount": o.refundAmount,//单人航段退票金额
                         "refundFee": o.refundFee,//单人航段退票手续费
-                        "departureDate": Utils.formatDate(o.flightDate),
-                        "departureTime": Utils.formatTime(o.flightDepartureTime),
-                        "arrivalDate": Utils.formatDate(o.flightDate),
-                        "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                        "departureDate": Utils.formatDate(c.startDate),
+                        "departureTime": Utils.formatTime(c.startTime),
+                        "arrivalDate": Utils.formatDate(c.startDate),
+                        "arrivalTime": Utils.formatTime(c.endTime),
                         "segmentType": 1,
                         "sequenceNum": i + 1,
                         "price": o.orderTotalPrice,
