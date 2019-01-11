@@ -228,6 +228,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                     let c = co.find((e) => {
                         return e.orderNo == o.orderNo;
                     });
+                    console.log(o);
                     return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
