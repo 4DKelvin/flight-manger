@@ -497,7 +497,7 @@ router.post('/ChangeSearch', async (req, res, next) => {
                         "arrTerminal": f.arrTerminal,//到达机场航站楼
                         "planeModule": "320",//机型
                         "codeShare": "",//是否共享
-                        "actFlightNum": f.actFlightNo,//实际承运航班号
+                        "actFlightNum": "",//实际承运航班号
                         "stops": f.stopFlightInfo.stopCityInfoList.length,//经停次数
                         "cabin_total_price": os[i].orderOriginPrice,//经济舱全价
                         "cabinList": [
