@@ -3,7 +3,7 @@ const Api = require("./lib/flight");
 
 setInterval(async () => {
     let orders = await Order.find({});
-    for (let i = 0; i < orders.length; i++) {
+    for (let i = 0; i < orders.length; i++) {-
         let local = orders[i];
         let order = await Api.orderDetail(local.orderNo);
         if (order) {

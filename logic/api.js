@@ -948,8 +948,13 @@ router.post('/NotifyTicket', async (req, res, next) => {
         if (Number(amount) === Number(total)) {
             if (Number(status) === 1) {
                 try {
+                    let ticketTime = new Date().getTime();
                     for (let i = 0; i < promises.length; i++) {
                         await Api.pay(promises[i].id, promises[i].agent);
+                        let remote = await Api.orderDetail(orders[i].orderNo);
+                        if(remote){
+                            ticketTime = Math.max(ticketTime,new Date(remote.detail.agentLastTicketTime).getTime());
+                        }
                     }
                     Utils.renderApiResult(res, {
                         "version": "1.0.0", //版本号
@@ -958,7 +963,7 @@ router.post('/NotifyTicket', async (req, res, next) => {
                             "errorMsg": "" //失败具体原因
                         },
                         "orderNo": orderNo, //订单号
-                        "latestTicketTime": orders[1] && orders[1].passengerTicketTime ? Utils.formatDateTime(orders[1].passengerTicketTime) : ""
+                        "latestTicketTime": Utils.formatDateTime(ticketTime)
                     });
                 } catch (e) {
                     Utils.renderApiResult(res, {
