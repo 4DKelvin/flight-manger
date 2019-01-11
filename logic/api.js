@@ -231,7 +231,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         return e.orderNo == o.orderNo;
                     });
                     let et = Utils.formatTime(c ? c.startDate + " " + c.endTime : o.flightArrivalTime);
-                    let sd = Utils.formatDate(c ? c.startDate : o.flightDepartureTimeformatDate);
+                    let sd = Utils.formatDate(c ? c.startDate : o.flightDepartureTime);
                     return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
