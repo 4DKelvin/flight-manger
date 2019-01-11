@@ -245,7 +245,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "refundFee": o.refundFee,//单人航段退票手续费
                         "departureDate": Utils.formatDate(c.startDate),
                         "departureTime": Utils.formatTime(c.startDate + " " + c.startTime),
-                        "arrivalDate": Utils.formatDate(c.startDate),
+                        "arrivalDate": Utils.formatDate(c.startDate, c.endTime.indexOf('00:') === 0 || c.endTime.indexOf('01:') === 0 ? 1 : 0),
                         "arrivalTime": Utils.formatTime(c.startDate + " " + c.endTime),
                         "segmentType": 1,
                         "sequenceNum": i + 1,
