@@ -230,6 +230,8 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                     let c = co.find((e) => {
                         return e.orderNo == o.orderNo;
                     });
+                    let et = Utils.formatTime(c ? c.startDate + " " + c.endTime : o.flightArrivalTime);
+                    let sd = Utils.formatDate(c ? c.startDate : o.flightDepartureTimeformatDate);
                     return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
@@ -244,9 +246,9 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "arrAirport": "",
                         "refundAmount": o.refundAmount,//单人航段退票金额
                         "refundFee": o.refundFee,//单人航段退票手续费
-                        "departureDate": Utils.formatDate(c ? c.startDate : o.flightDepartureTime),
+                        "departureDate": sd,
                         "departureTime": Utils.formatTime(c ? c.startDate + " " + c.startTime : o.flightDepartureTime),
-                        "arrivalDate": Utils.formatDate(c ? (c.startDate, c.endTime.indexOf('00:') === 0 || c.endTime.indexOf('01:') === 0 ? 1 : 0) : o.flightArrivalTime),
+                        "arrivalDate": Utils.formatDate(sd, et.indexOf('00:') === 0 || et.indexOf('01:') === 0 ? 1 : 0),
                         "arrivalTime": Utils.formatTime(c ? (c.startDate + " " + c.endTime) : o.flightArrivalTime),
                         "segmentType": 1,
                         "sequenceNum": i + 1,
