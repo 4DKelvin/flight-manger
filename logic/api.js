@@ -1419,8 +1419,8 @@ router.post('/SearchAV', async (req, res, next) => {
                     "depCode": start.dpt, //出发机场三字码
                     "arrCode": start.arr, //到达机场三字码
                     "date": params.date, //出发日期
-                    "dptTime": start.dptTime.replace(":", ""), //出发时间
-                    "arrTime": start.arrTime.replace(":", ""), //到达时间
+                    "dptTime": start.dptTime, //出发时间
+                    "arrTime": start.arrTime, //到达时间
                     "carrier": start.carrier, //航司二字码
                     "code": start.flightNum, //航班号
                     "meal": start.meal, //餐食
@@ -1442,7 +1442,7 @@ router.post('/SearchAV', async (req, res, next) => {
                     "duration": start.flightTimes, //飞行时长
                     "dptTower": start.dptTerminal, //出发航站楼
                     "arrTower": start.arrTerminal, //到达航站楼
-                    "crossDays": "0", //跨天
+                    "crossDays": start.arrTime.indexOf("00:") === 0 || start.arrTime.indexOf("01:") === 0 ? "1" : "0", //跨天
                     "dataExt": {}
                 }
             }
@@ -1468,8 +1468,8 @@ router.post('/SearchAV', async (req, res, next) => {
                             "depCode": end.dpt, //出发机场三字码
                             "arrCode": end.arr, //到达机场三字码
                             "date": params.returnDate, //出发日期
-                            "dptTime": end.dptTime.replace(":", ""), //出发时间
-                            "arrTime": end.arrTime.replace(":", ""), //到达时间
+                            "dptTime": end.dptTime, //出发时间
+                            "arrTime": end.arrTime, //到达时间
                             "carrier": end.carrier, //航司二字码
                             "code": end.flightNum, //航班号
                             "meal": end.meal, //餐食
@@ -1491,7 +1491,7 @@ router.post('/SearchAV', async (req, res, next) => {
                             "duration": end.flightTimes, //飞行时长
                             "dptTower": end.dptTerminal, //出发航站楼
                             "arrTower": end.arrTerminal, //到达航站楼
-                            "crossDays": "0", //跨天
+                            "crossDays": end.arrTime.indexOf("00:") === 0 || end.arrTime.indexOf("01:") === 0 ? "1" : "0", //跨天
                             "dataExt": {}
                         }
                     }
