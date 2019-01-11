@@ -230,6 +230,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                     let c = co.find((e) => {
                         return e.orderNo == o.orderNo;
                     });
+                    console.log(c);
                     let et = Utils.formatTime(c ? c.startDate + " " + c.endTime : o.flightArrivalTime);
                     let sd = Utils.formatDate(c ? c.startDate : o.flightDepartureTime);
                     return {
