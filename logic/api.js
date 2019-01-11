@@ -227,10 +227,10 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                     }
                 ],
                 "changeSegmentList": os.map((o, i) => {
-                    let c = co.find((e) => {
-                        return e.orderNo == o.orderNo;
-                    });
-                    console.log(c);
+                    // let c = co.find((e) => {
+                    //     return e.orderNo == o.orderNo;
+                    // });
+                    let c = null;
                     let et = Utils.formatTime(c ? c.startDate + " " + c.endTime : o.flightArrivalTime);
                     let sd = Utils.formatDate(c ? c.startDate : o.flightDepartureTime);
                     return {
