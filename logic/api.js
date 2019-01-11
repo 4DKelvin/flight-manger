@@ -49,6 +49,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
                 let o = os.find((e) => {
                     return e.orderNo == c.orderNo;
                 });
+                let et = Utils.formatTime(o.flightArrivalTime);
                 return {
                     "flightNum": o.flightNo,
                     "cabin": "Y",
@@ -65,7 +66,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
                     "refundFee": o.refundFee,//单人航段退票手续费
                     "departureDate": Utils.formatDate(o.flightDate),
                     "departureTime": Utils.formatTime(o.flightDepartureTime),
-                    "arrivalDate": Utils.formatDate(o.flightDate),
+                    "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
                     "arrivalTime": Utils.formatTime(o.flightArrivalTime),
                     "segmentType": 1,
                     "sequenceNum": i + 1,
@@ -101,6 +102,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
             }),
             "changeSegmentList": orders.map((c, i) => {
                 let o = os[i];
+                let et = Utils.formatTime(o.flightArrivalTime);
                 return {
                     "flightNum": o.flightNo,
                     "cabin": "Y",
@@ -117,7 +119,7 @@ router.post('/ChangeInfo', async (req, res, next) => {
                     "refundFee": o.refundFee,//单人航段退票手续费
                     "departureDate": Utils.formatDate(o.flightDate),
                     "departureTime": Utils.formatTime(o.flightDepartureTime),
-                    "arrivalDate": Utils.formatDate(o.flightDate),
+                    "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
                     "arrivalTime": Utils.formatTime(o.flightArrivalTime),
                     "segmentType": 1,
                     "sequenceNum": i + 1,
@@ -228,7 +230,6 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                     let c = co.find((e) => {
                         return e.orderNo == o.orderNo;
                     });
-                    console.log(o);
                     return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
@@ -605,6 +606,7 @@ router.post('/RefundInfo', async (req, res, next) => {
                     }),
                     "flights":
                         os.map((o, i) => {
+                            let et = Utils.formatTime(o.flightArrivalTime);
                             return {
                                 "flightNum": o.flightNo,
                                 "cabin": "Y",
@@ -621,7 +623,7 @@ router.post('/RefundInfo', async (req, res, next) => {
                                 "refundFee": o.refundFee,//单人航段退票手续费
                                 "departureDate": Utils.formatDate(o.flightDate),
                                 "departureTime": Utils.formatTime(o.flightDepartureTime),
-                                "arrivalDate": Utils.formatDate(o.flightDate),
+                                "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
                                 "arrivalTime": Utils.formatTime(o.flightArrivalTime),
                                 "segmentType": 1,
                                 "sequenceNum": i + 1,
@@ -809,6 +811,7 @@ router.post('/RefundSearch', async (req, res, next) => {
                     }
                 }),
                 "flights": os.map((o, i) => {
+                    let et = Utils.formatTime(o.flightArrivalTime);
                     return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
@@ -823,7 +826,7 @@ router.post('/RefundSearch', async (req, res, next) => {
                         "arrAirport": "",
                         "departureDate": Utils.formatDate(o.flightDate),
                         "departureTime": Utils.formatTime(o.flightDepartureTime),
-                        "arrivalDate": Utils.formatDate(o.flightDate),
+                        "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
                         "arrivalTime": Utils.formatTime(o.flightArrivalTime),
                         "segmentType": 1,
                         "sequenceNum": i + 1,
@@ -886,6 +889,7 @@ router.post('/ApplyRefund', async (req, res, next) => {
                         }
                     }),
                     "flights": os.map((o, i) => {
+                        let et = Utils.formatTime(o.flightArrivalTime);
                         return {
                             "flightNum": o.flightNo,
                             "cabin": "Y",
@@ -900,7 +904,7 @@ router.post('/ApplyRefund', async (req, res, next) => {
                             "arrAirport": "",
                             "departureDate": Utils.formatDate(o.flightDate),
                             "departureTime": Utils.formatTime(o.flightDepartureTime),
-                            "arrivalDate": Utils.formatDate(o.flightDate),
+                            "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
                             "arrivalTime": Utils.formatTime(o.flightArrivalTime),
                             "segmentType": 1,
                             "sequenceNum": i + 1,
@@ -1079,6 +1083,7 @@ router.post('/OrderInfo', async (req, res, next) => {
         "orderNo": req.body.orderNo, //航司单号
         "orderStatus": status[orders[0].orderStatus],
         "flights": orders.map((o) => {
+            let et = Utils.formatTime(o.flightArrivalTime);
             return {
                 "sequenceNum": 1, //航班序号
                 "carrier": o.flightNo.substr(0, 2), //销售承运人
@@ -1090,7 +1095,7 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "arrAirportCode": o.flightArrivalCode,
                 "departureDate": Utils.formatDate(o.flightDate), //出发日期
                 "departureTime": Utils.formatTime(o.flightDepartureTime), //出发时间
-                "arrivalDate": Utils.formatDate(o.flightDate), //到达日期
+                "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
                 "arrivalTime": Utils.formatTime(o.flightArrivalTime), //到达时间
                 "depTerminal": "", //出发航站楼,可空
                 "arrTerminal": "", //到达航站楼,可空
