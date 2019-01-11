@@ -243,10 +243,10 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "arrAirport": "",
                         "refundAmount": o.refundAmount,//单人航段退票金额
                         "refundFee": o.refundFee,//单人航段退票手续费
-                        "departureDate": Utils.formatDate(c ? c.startDate : o.flightDepartureDateTime),
-                        "departureTime": Utils.formatTime(c ? c.startDate + " " + c.startTime : o.flightDepartureDateTime),
-                        "arrivalDate": Utils.formatDate(c ? (c.startDate, c.endTime.indexOf('00:') === 0 || c.endTime.indexOf('01:') === 0 ? 1 : 0) : o.flightArrivalDateTime),
-                        "arrivalTime": Utils.formatTime(c ? (c.startDate + " " + c.endTime) : o.flightArrivalDateTime),
+                        "departureDate": Utils.formatDate(c ? c.startDate : o.flightDepartureTime),
+                        "departureTime": Utils.formatTime(c ? c.startDate + " " + c.startTime : o.flightDepartureTime),
+                        "arrivalDate": Utils.formatDate(c ? (c.startDate, c.endTime.indexOf('00:') === 0 || c.endTime.indexOf('01:') === 0 ? 1 : 0) : o.flightArrivalTime),
+                        "arrivalTime": Utils.formatTime(c ? (c.startDate + " " + c.endTime) : o.flightArrivalTime),
                         "segmentType": 1,
                         "sequenceNum": i + 1,
                         "price": o.orderTotalPrice,
