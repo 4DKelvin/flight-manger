@@ -485,8 +485,8 @@ router.post('/ChangeSearch', async (req, res, next) => {
                 await cKey.set(item.uniqKey, item);
             }
             avResultList.push({ //每一个节点为一个航线对
-                "depAirportCode": local.depAirportCode,
-                "arrAirportCode": local.arrAirportCode,
+                "depAirportCode": local.flightDepartureCode,
+                "arrAirportCode": local.flightArrivalCode,
                 "tripFlightList": flights.map((f) => {
                     return {
                         "carrier": "MU",
