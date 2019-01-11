@@ -224,12 +224,11 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "type": 2  //1 自愿 2 非自愿
                     }
                 ],
-                "changeSegmentList": co.map((c, i) => {
-                    let o = os.find((e) => {
-                        return c && e.orderNo == c.orderNo;
+                "changeSegmentList": os.map((o, i) => {
+                    let c = co.find((e) => {
+                        return e.orderNo == o.orderNo;
                     });
-                    if (!o || !c) return null;
-                    else return {
+                    return {
                         "flightNum": o.flightNo,
                         "cabin": "Y",
                         "childCabin": "Y",
@@ -243,10 +242,10 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "arrAirport": "",
                         "refundAmount": o.refundAmount,//单人航段退票金额
                         "refundFee": o.refundFee,//单人航段退票手续费
-                        "departureDate": Utils.formatDate(c.startDate),
-                        "departureTime": Utils.formatTime(c.startDate + " " + c.startTime),
-                        "arrivalDate": Utils.formatDate(c.startDate, c.endTime.indexOf('00:') === 0 || c.endTime.indexOf('01:') === 0 ? 1 : 0),
-                        "arrivalTime": Utils.formatTime(c.startDate + " " + c.endTime),
+                        "departureDate": Utils.formatDate(c ? c.startDate : o.flightDepartureDateTime),
+                        "departureTime": Utils.formatTime(c ? c.startDate + " " + c.startTime : o.flightDepartureDateTime),
+                        "arrivalDate": Utils.formatDate(c ? (c.startDate, c.endTime.indexOf('00:') === 0 || c.endTime.indexOf('01:') === 0 ? 1 : 0) : o.flightArrivalDateTime),
+                        "arrivalTime": Utils.formatTime(c ? (c.startDate + " " + c.endTime) : o.flightArrivalDateTime),
                         "segmentType": 1,
                         "sequenceNum": i + 1,
                         "price": o.orderTotalPrice,
