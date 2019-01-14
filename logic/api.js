@@ -951,6 +951,7 @@ router.post('/NotifyTicket', async (req, res, next) => {
                     let ticketTime = new Date().getTime();
                     for (let i = 0; i < promises.length; i++) {
                         await Api.pay(promises[i].id, promises[i].agent);
+                        console.log(orders[i]);
                         let remote = await Api.orderDetail(orders[i].orderNo);
                         if(remote){
                             ticketTime = Math.max(ticketTime,new Date(remote.detail.agentLastTicketTime).getTime());
