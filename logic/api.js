@@ -935,6 +935,12 @@ router.post('/NotifyTicket', async (req, res, next) => {
     let status = req.body.status;
     let amount = req.body.payAmount;
     let orders = await groupDetail(orderNo);
+    let os = [];
+    if (orders.orderId) {
+        for (let date in orders.flights) {
+            os.push(orders.flights[date]);
+        }
+    }
     if (orders.orderId) {
         let total = 0;
         let promises = [];
@@ -951,8 +957,8 @@ router.post('/NotifyTicket', async (req, res, next) => {
                     let ticketTime = new Date().getTime();
                     for (let i = 0; i < promises.length; i++) {
                         await Api.pay(promises[i].id, promises[i].agent);
-                        console.log(orders[i]);
-                        let remote = await Api.orderDetail(orders[i].orderNo);
+                        console.log(os[i]);
+                        let remote = await Api.orderDetail(os[i].orderNo);
                         if(remote){
                             ticketTime = Math.max(ticketTime,new Date(remote.detail.agentLastTicketTime).getTime());
                         }
