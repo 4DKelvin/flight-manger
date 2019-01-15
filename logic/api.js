@@ -8,6 +8,7 @@ let Key = require('../model/key');
 let cKey = require('../model/ckey');
 let ChangeOrder = require('../model/change');
 let cheerio = require('cheerio');
+let User = require("../model/user");
 
 
 router.post('/ChangeInfo', async (req, res, next) => {
@@ -34,52 +35,15 @@ router.post('/ChangeInfo', async (req, res, next) => {
             "未知状态": "17",
             "改签完成": "13"
         };
-        Utils.renderApiResult(res, {
-            "orderNo": source.groupId,
-            "subOrderNo": req.body.orderNo,
-            "orderStatus": status[source.orderStatus],
-            "totalPrice": eval(orders.map((e) => {
-                return Number(e.allFee)
-            }).join('+')),
-            "applyType": 1,
-            "reason": 5,
-            "reasonDesc": "我要改变行程计划，我要改航班",
-            "refuseReason": "",
-            "changeSegmentList": orders.map((c, i) => {
-                let o = os.find((e) => {
-                    return e.orderNo == c.orderNo;
-                });
-                let et = Utils.formatTime(o.flightArrivalTime);
-                return {
-                    "flightNum": o.flightNo,
-                    "cabin": "Y",
-                    "childCabin": "Y",
-                    "depCityCode": "",
-                    "arrCityCode": "",
-                    "depCity": "",
-                    "arrCity": "",
-                    "depAirportCode": o.flightDepartureCode,
-                    "arrAirportCode": o.flightArrivalCode,
-                    "depAirport": "",
-                    "arrAirport": "",
-                    "refundAmount": o.refundAmount,//单人航段退票金额
-                    "refundFee": o.refundFee,//单人航段退票手续费
-                    "departureDate": Utils.formatDate(o.flightDate),
-                    "departureTime": Utils.formatTime(o.flightDepartureTime),
-                    "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
-                    "arrivalTime": Utils.formatTime(o.flightArrivalTime),
-                    "segmentType": 1,
-                    "sequenceNum": i + 1,
-                    "price": o.orderTotalPrice,
-                    "fuelTax": o.orderFuelTax,
-                    "airportTax": o.orderConstructionFee
-                };
-            }),
-            "changePassengerList": orders.map((c, i) => {  //可改期的乘机人列表
-                let o = os.find((e) => {
-                    return e.orderNo == c.orderNo;
-                });
-                return {
+        let p = [];
+        for (let i = 0; i < orders.length; i++) {  //可改期的乘机人列表
+            let c = orders[i];
+            let o = os.find((e) => {
+                return e.orderNo == c.orderNo;
+            });
+            let users = await User.find({orderNo: o.orderNo});
+            users.forEach((o, i) => {
+                p.push({
                     "uniqueKey": i, //乘机人序号
                     "name": o.passengerName,//姓名
                     "cardType": "NI",//证件类型
@@ -98,8 +62,21 @@ router.post('/ChangeInfo', async (req, res, next) => {
                             }
                         }
                     ]
-                }
-            }),
+                })
+            });
+        }
+        Utils.renderApiResult(res, {
+            "orderNo": source.groupId,
+            "subOrderNo": req.body.orderNo,
+            "orderStatus": status[source.orderStatus],
+            "totalPrice": eval(orders.map((e) => {
+                return Number(e.allFee)
+            }).join('+')),
+            "applyType": 1,
+            "reason": 5,
+            "reasonDesc": "我要改变行程计划，我要改航班",
+            "refuseReason": "",
+            "changePassengerList": p,
             "changeSegmentList": orders.map((c, i) => {
                 let o = os[i];
                 let et = Utils.formatTime(o.flightArrivalTime);
@@ -176,6 +153,36 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                     let cs = await ChangeOrder.findById(orders.flights[date].orderNo);
                     if (cs) co.push(cs);
                 }
+            }
+            let p = [];
+            for (let i = 0; i < co.length; i++) {  //可改期的乘机人列表
+                let c = co[i];
+                let o = os.find((e) => {
+                    return e.orderNo == c.orderNo;
+                });
+                let users = await User.find({orderNo: o.orderNo});
+                users.forEach((o, i) => {
+                    p.push({
+                        "uniqueKey": i, //乘机人序号
+                        "name": o.passengerName,//姓名
+                        "cardType": "NI",//证件类型
+                        "cardNum": o.passengerIdentify, //证件号码
+                        "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                        "birthday": "", //出生日期
+                        "cardExpired": "",
+                        "cardIssuePlace": "",
+                        "mobCountryCode": "86",
+                        "tickets": [
+                            {
+                                "ticketNo": o.passengerTicketNo,
+                                "segmentIndex": {
+                                    "segmentType": 1,
+                                    "sequenceNum": 1 + i
+                                }
+                            }
+                        ]
+                    })
+                });
             }
             let status = {
                 "初始状态": 0,
@@ -258,16 +265,7 @@ router.post('/ChangeOrderInfo', async (req, res, next) => {
                         "airportTax": o.orderConstructionFee
                     };
                 }),
-                "changePassengerList": os.map((o, i) => {  //可改期的乘机人列表
-                    return {
-                        "uniqueKey": i, //乘机人序号
-                        "name": o.passengerName,//姓名
-                        "cardType": "NI",//证件类型
-                        "cardNum": o.passengerIdentify, //证件号码
-                        "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
-                        "birthday": "", //出生日期
-                    }
-                }),
+                "changePassengerList": p,
                 "canChangeList": os.map((o, i) => { //可改期乘机人、可改期航段映射
                     return {
                         "uniqueKey": i,
@@ -300,7 +298,7 @@ router.post('/ChangePay', async (req, res, next) => {
         let amount = req.body.payAmount;
         let orders = await ChangeOrder.find({groupId: orderNo});
         let total = eval(orders.map((e) => {
-            return e.allFee;
+            return isNaN(e.allFee) ? 0 : Number(e.allFee);
         }).join('+'));
         if (Number(amount) != Number(total)) {
             return Utils.renderApiResult(res, {
@@ -326,7 +324,6 @@ router.post('/ChangePay', async (req, res, next) => {
                     }
                 })
             } catch (e) {
-                console.log(e);
                 Utils.renderApiResult(res, {
                     "version": "1.0.0", //版本号
                     "status": {
@@ -575,38 +572,26 @@ router.post('/RefundInfo', async (req, res, next) => {
                 os.push(orders.flights[date]);
             }
         }
-        Utils.renderApiResult(res, {
-            "version": "1.0.0",//版本号
-            "status": {
-                "code": 0,//状态码 0-成功  非0-失败
-                "errorMsg": null//失败原因描述
-            },
-            "orderNo": req.body.orderNo,
-            "businessOrderNo": req.body.orderNo,//业务单号,
-            "refundAmount": eval(os.map((e) => {
-                return e.refundAmount || 0;
-            }).join('+')).toFixed(2), //退票金额
-            "refundFee": eval(os.map((e) => {
-                return e.refundFee || 0;
-            }).join('+')).toFixed(2),
-            "passengers": [
-                {
-                    "name": os[0].passengerName,//乘机人姓名
+        let p = [];
+        for (let i = 0; i < os.length; i++) {
+            let o = os[i];
+            let users = await User.find({orderNo: o.orderNo});
+            users.forEach((e) => {
+                p.push({
+                    "name": e.passengerName,//乘机人姓名
                     "cardType": "NI",//证件类型，NI：身份证，PP：护照，OT：其他
-                    "cardNum": os[0].passengerIdentify,//证件号码
-                    "ticketNo": os[0].passengerTicketNo,//票号
+                    "cardNum": e.passengerIdentify,//证件号码
+                    "ticketNo": e.passengerTicketNo,//票号
                     "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
                     "mobCountryCode": "86",
-                    "tickets": os.map((o, i) => {
-                        return {
-                            "ticketNo": o.passengerTicketNo,
-                            "segmentIndex": {
-                                "flightNum": o.flightNo,
-                                "segmentType": 1,
-                                "sequenceNum": i + 1
-                            }
+                    "tickets": {
+                        "ticketNo": e.passengerTicketNo,
+                        "segmentIndex": {
+                            "flightNum": o.flightNo,
+                            "segmentType": 1,
+                            "sequenceNum": i + 1
                         }
-                    }),
+                    },
                     "flights":
                         os.map((o, i) => {
                             let et = Utils.formatTime(o.flightArrivalTime);
@@ -638,8 +623,24 @@ router.post('/RefundInfo', async (req, res, next) => {
                                 "applyType": 1 //自愿退票1  非自愿退票2
                             }
                         })
-                }
-            ]
+                })
+            })
+        }
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",//版本号
+            "status": {
+                "code": 0,//状态码 0-成功  非0-失败
+                "errorMsg": null//失败原因描述
+            },
+            "orderNo": req.body.orderNo,
+            "businessOrderNo": req.body.orderNo,//业务单号,
+            "refundAmount": eval(os.map((e) => {
+                return e.refundAmount || 0;
+            }).join('+')).toFixed(2), //退票金额
+            "refundFee": eval(os.map((e) => {
+                return e.refundFee || 0;
+            }).join('+')).toFixed(2),
+            "passengers": p
         })
     } catch (e) {
         Utils.renderApiResult(res, {
@@ -680,32 +681,28 @@ router.post('/RefundConfirm', async (req, res, next) => {
                     })
                 }
             }
-            Utils.renderApiResult(res, {
-                "version": "1.0.0", //版本号
-                "status": {
-                    "code": 0, //状态码 0-成功  非0-失败
-                    "errorMsg": null//失败具体原因
-                },
-                "passengers": [
-                    {
-                        "name": os[0].passengerName,//乘机人姓名
+            let p = [];
+            for (let i = 0; i < os.length; i++) {
+                let o = os[i];
+                let users = await User.find({orderNo: o.orderNo});
+                users.forEach((e) => {
+                    p.push({
+                        "name": e.passengerName,//乘机人姓名
                         "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
-                        "cardNum": os[0].passengerIdentify,//证件号码
-                        "ticketNo": os[0].passengerInsuranceNo,//票号
+                        "cardNum": e.passengerIdentify,//证件号码
+                        "ticketNo": e.passengerInsuranceNo,//票号
                         "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
                         "mobCountryCode": "86",
                         "pasId": "1",//乘机人id
                         "applyType": 1, //参见退票类型说明
-                        "tickets": os.map((o, i) => {
-                            return {
-                                "ticketNo": o.passengerTicketNo, //票号
-                                "segmentIndex": {
-                                    "flightNum": o.flightNo, //出票航段航班号
-                                    "segmentType": 1, //出票航程索引
-                                    "sequenceNum": i + 1//出票航段索引
-                                }
+                        "tickets": {
+                            "ticketNo": o.passengerTicketNo, //票号
+                            "segmentIndex": {
+                                "flightNum": o.flightNo, //出票航段航班号
+                                "segmentType": 1, //出票航程索引
+                                "sequenceNum": i + 1//出票航段索引
                             }
-                        }),
+                        },
                         "flights": os.map((o, i) => {
                             return {
                                 "segmentType": 1,
@@ -713,8 +710,16 @@ router.post('/RefundConfirm', async (req, res, next) => {
                                 "refundId": new Date().getTime() + (54321 * i)//退票流水
                             }
                         })
-                    }
-                ]
+                    });
+                })
+            }
+            Utils.renderApiResult(res, {
+                "version": "1.0.0", //版本号
+                "status": {
+                    "code": 0, //状态码 0-成功  非0-失败
+                    "errorMsg": null//失败具体原因
+                },
+                "passengers": p
             });
         } catch (e) {
             Utils.renderApiResult(res, {
@@ -779,6 +784,59 @@ router.post('/RefundSearch', async (req, res, next) => {
                 continue;
             }
         }
+        let p = [];
+        for (let i = 0; i < os.length; i++) {
+            let o = os[i];
+            let users = await User.find({orderNo: o.orderNo});
+            users.forEach((e, z) => {
+                p.push({
+                    "name": e.passengerName,//乘机人姓名
+                    "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
+                    "cardNum": e.passengerIdentify,//证件号码
+                    "ticketNo": e.passengerInsuranceNo,//票号
+                    "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                    "mobCountryCode": "86",
+                    "pasId": "1",//乘机人id
+                    "applyType": 1, //参见退票类型说明
+                    "tickets": {
+                        "ticketNo": e.passengerTicketNo, //票号
+                        "segmentIndex": {
+                            "flightNum": o.flightNo, //出票航段航班号
+                            "segmentType": 1, //出票航程索引
+                            "sequenceNum": z + 1//出票航段索引
+                        }
+                    },
+                    "flights": os.map((o, i) => {
+                        let et = Utils.formatTime(o.flightArrivalTime);
+                        return {
+                            "flightNum": o.flightNo,
+                            "cabin": "Y",
+                            "childCabin": "Y",
+                            "depCityCode": "",
+                            "arrCityCode": "",
+                            "depCity": "",
+                            "arrCity": "",
+                            "depAirportCode": o.flightDepartureCode,
+                            "arrAirportCode": o.flightArrivalCode,
+                            "depAirport": "",
+                            "arrAirport": "",
+                            "departureDate": Utils.formatDate(o.flightDate),
+                            "departureTime": Utils.formatTime(o.flightDepartureTime),
+                            "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
+                            "arrivalTime": Utils.formatTime(o.flightArrivalTime),
+                            "segmentType": 1,
+                            "sequenceNum": i + 1,
+                            "price": o.orderTotalPrice,
+                            "fuelTax": o.orderFuelTax,
+                            "airportTax": o.orderConstructionFee,
+                            "refundAmount": fee[i].refundAmount,
+                            "refundFee": fee[i].refundFee
+                        }
+                    })
+                });
+            });
+
+        }
         Utils.renderApiResult(res, {
             "version": "1.0.0", //版本号
             "status": {
@@ -794,53 +852,7 @@ router.post('/RefundSearch', async (req, res, next) => {
             "refundFee": eval(fee.map((e) => {
                 return e.refundFee
             }).join('+')).toFixed(2), //退票手续费
-            "passengers": [{
-                "name": os[0].passengerName,//乘机人姓名
-                "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
-                "cardNum": os[0].passengerIdentify,//证件号码
-                "ticketNo": os[0].passengerInsuranceNo,//票号
-                "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
-                "mobCountryCode": "86",
-                "pasId": "1",//乘机人id
-                "applyType": 1, //参见退票类型说明
-                "tickets": os.map((o, i) => {
-                    return {
-                        "ticketNo": o.passengerTicketNo, //票号
-                        "segmentIndex": {
-                            "flightNum": o.flightNo, //出票航段航班号
-                            "segmentType": 1, //出票航程索引
-                            "sequenceNum": i + 1//出票航段索引
-                        }
-                    }
-                }),
-                "flights": os.map((o, i) => {
-                    let et = Utils.formatTime(o.flightArrivalTime);
-                    return {
-                        "flightNum": o.flightNo,
-                        "cabin": "Y",
-                        "childCabin": "Y",
-                        "depCityCode": "",
-                        "arrCityCode": "",
-                        "depCity": "",
-                        "arrCity": "",
-                        "depAirportCode": o.flightDepartureCode,
-                        "arrAirportCode": o.flightArrivalCode,
-                        "depAirport": "",
-                        "arrAirport": "",
-                        "departureDate": Utils.formatDate(o.flightDate),
-                        "departureTime": Utils.formatTime(o.flightDepartureTime),
-                        "arrivalDate": Utils.formatDate(o.flightDate, et.indexOf("00:") === 0 || et.indexOf("01:") === 0 ? 1 : 0),
-                        "arrivalTime": Utils.formatTime(o.flightArrivalTime),
-                        "segmentType": 1,
-                        "sequenceNum": i + 1,
-                        "price": o.orderTotalPrice,
-                        "fuelTax": o.orderFuelTax,
-                        "airportTax": o.orderConstructionFee,
-                        "refundAmount": fee[i].refundAmount,
-                        "refundFee": fee[i].refundFee
-                    }
-                })
-            }]
+            "passengers": p
         });
     } catch (e) {
         Utils.renderApiResult(res, {
@@ -863,34 +875,28 @@ router.post('/ApplyRefund', async (req, res, next) => {
                 os.push(orders.flights[date]);
             }
         }
-        Utils.renderApiResult(res, {
-            "version": "1.0.0",
-            "status": {
-                "code": 0,
-                "errorMsg": null
-            },
-            "orderNo": orderNo,
-            "businessOrderNo": orderNo,
-            "passengers": [
-                {
-                    "name": os[0].passengerName,//乘机人姓名
+        let p = [];
+        for (let i = 0; i < os.length; i++) {
+            let o = os[i];
+            let users = await User.find({orderNo: o.orderNo});
+            users.forEach((e) => {
+                p.push({
+                    "name": e.passengerName,//乘机人姓名
                     "cardType": "NI",////证件类型，NI：身份证，PP：护照，OT：其他
-                    "cardNum": os[0].passengerIdentify,//证件号码
-                    "ticketNo": os[0].passengerInsuranceNo,//票号
+                    "cardNum": e.passengerIdentify,//证件号码
+                    "ticketNo": e.passengerInsuranceNo,//票号
                     "ageType": 0,//乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
                     "mobCountryCode": "86",
                     "pasId": "1",//乘机人id
                     "applyType": 1, //参见退票类型说明
-                    "tickets": os.map((o, i) => {
-                        return {
-                            "ticketNo": o.passengerTicketNo, //票号
-                            "segmentIndex": {
-                                "flightNum": o.flightNo, //出票航段航班号
-                                "segmentType": 1, //出票航程索引
-                                "sequenceNum": i + 1//出票航段索引
-                            }
+                    "tickets": {
+                        "ticketNo": e.passengerTicketNo, //票号
+                        "segmentIndex": {
+                            "flightNum": o.flightNo, //出票航段航班号
+                            "segmentType": 1, //出票航程索引
+                            "sequenceNum": i + 1//出票航段索引
                         }
-                    }),
+                    },
                     "flights": os.map((o, i) => {
                         let et = Utils.formatTime(o.flightArrivalTime);
                         return {
@@ -916,8 +922,18 @@ router.post('/ApplyRefund', async (req, res, next) => {
                             "airportTax": o.orderConstructionFee
                         }
                     })
-                }
-            ]
+                })
+            });
+        }
+        Utils.renderApiResult(res, {
+            "version": "1.0.0",
+            "status": {
+                "code": 0,
+                "errorMsg": null
+            },
+            "orderNo": orderNo,
+            "businessOrderNo": orderNo,
+            "passengers": p
         });
     } catch (e) {
         Utils.renderApiResult(res, {
@@ -957,10 +973,9 @@ router.post('/NotifyTicket', async (req, res, next) => {
                     let ticketTime = new Date().getTime();
                     for (let i = 0; i < promises.length; i++) {
                         await Api.pay(promises[i].id, promises[i].agent);
-                        console.log(os[i]);
                         let remote = await Api.orderDetail(os[i].orderNo);
-                        if(remote){
-                            ticketTime = Math.max(ticketTime,new Date(remote.detail.agentLastTicketTime).getTime());
+                        if (remote) {
+                            ticketTime = Math.max(ticketTime, new Date(remote.detail.agentLastTicketTime).getTime());
                         }
                     }
                     Utils.renderApiResult(res, {
@@ -1087,6 +1102,34 @@ router.post('/OrderInfo', async (req, res, next) => {
         "退款中": -1,
         "未知状态": -1
     };
+    let p = [];
+    for (let i = 0; i < orders.length; i++) {
+        let o = orders[i];
+        let users = await User.find({orderNo: o.orderNo});
+        users.forEach((e) => {
+            p.push({
+                "uniqueKey": 1, //乘机人序号
+                "name": e.name, //乘机人姓名
+                "gender": "M", //性别 M/F
+                "ageType": 0, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
+                "birthday": "", //出生日期
+                "nationality": null, //国籍
+                "tickets": {
+                    "ticketNo": e.passengerTicketNo, //票号
+                    "segmentIndex": {
+                        "flightNum": o.flightNo, //出票航段航班号
+                        "segmentType": 1, //出票航程索引
+                        "sequenceNum": i + 1//出票航段索引
+                    }
+                },
+                "cardType": "NI", //证件类型，NI：身份证，PP：护照，OT：其他
+                "cardNum": e.passengerIdentify, //证件号码
+                "cardExpired": null, //证件过期时间
+                "cardIssuePlace": null,
+                "mobCountryCode": 86
+            });
+        })
+    }
     Utils.renderApiResult(res, {
         "version": "1.0.0", //版本号
         "status": {
@@ -1133,31 +1176,7 @@ router.post('/OrderInfo', async (req, res, next) => {
                 "stops": 0 //经停数
             };
         }),
-        "passengers": remotes[0].passengers.map((p) => {
-            return {
-                "uniqueKey": 1, //乘机人序号
-                "name": p.name, //乘机人姓名
-                "gender": "M", //性别 M/F
-                "ageType": p.type == "成人" ? 0 : 1, //乘客类型（成人/儿童/婴儿）；0：成人，1：儿童，2：婴儿
-                "birthday": "", //出生日期
-                "nationality": null, //国籍
-                "tickets": orders.map((o, i) => {
-                    return {
-                        "ticketNo": o.passengerTicketNo, //票号
-                        "segmentIndex": {
-                            "flightNum": o.flightNo, //出票航段航班号
-                            "segmentType": 1, //出票航程索引
-                            "sequenceNum": i + 1//出票航段索引
-                        }
-                    }
-                }),
-                "cardType": "NI", //证件类型，NI：身份证，PP：护照，OT：其他
-                "cardNum": orders[0].passengerIdentify, //证件号码
-                "cardExpired": null, //证件过期时间
-                "cardIssuePlace": null,
-                "mobCountryCode": 86
-            };
-        }),
+        "passengers": p,
         "tgqRules": [],
         "priceInfo": {  //价格信息
             "allPrice": Number(remotes[0].passengerTypes[0].allPrices) + Number(remotes[1].passengerTypes[0].allPrices),  //总价
@@ -1209,42 +1228,58 @@ router.post('/BookingOrder', async (req, res, next) => {
             }
         });
     }
-
-    let name = req.body.passengers[0].name;
-    let identify = req.body.passengers[0].cardNum;
-    let birthday = req.body.passengers[0].birthday;
-    let cardType = req.body.passengers[0].cardType;
-    let sex = req.body.passengers[0].gender == 'M' ? 0 : 1;
     let bookingStart = bookings.start;
     let bookingEnd = bookings.end;
     let groupId = "TAN" + new Date().getTime();
     try {
         if (bookingStart && bookingEnd) {
-            let order = await Api.order(name, cardType, identify, birthday, sex, bookingStart);
+            let order = await Api.order(req.body.passengers.map((e) => {
+                return {
+                    "name": e.name,
+                    "cardNo": e.cardNum,
+                    "birthday": e.birthday,
+                    "sex": e.gender == 'M' ? 0 : 1,
+                    "cardType": e.cardType
+                }
+            }), bookingStart);
             let orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
                 throw "去程预约失败";
             }
             let arrTime = orderInfo.flightInfo[0].deptTime;
-            let totalPrice = orderInfo.passengerTypes[0].allPrices;
+            let totalPrice = eval(orderInfo.passengerTypes.map(((e) => {
+                return e.allPrices;
+            })).join("+"));
+            let printPrice = eval(orderInfo.passengerTypes.map(((e) => {
+                return e.printPrice;
+            })).join("+"));
+            let realPrice = eval(orderInfo.passengerTypes.map(((e) => {
+                return e.realPrice;
+            })).join("+"));
+
+            for (let i = 0; i < req.body.passengers.length; i++) {
+                let e = req.body.passengers[i];
+                await User.insert({
+                    groupId: groupId,
+                    orderNo: order.id,
+                    orderId: orderInfo.detail.orderNo,
+                    passengerName: e.name,
+                    passengerIdentifyType: e.cardType,
+                    passengerIdentify: e.cardNum,
+                })
+            }
             await Order.insertOrUpdate({
                 createAt: new Date().getTime(),
                 groupId: groupId,
                 orderId: order.id,
                 orderNo: orderInfo.detail.orderNo,
                 orderStatus: orderInfo.detail.status,
-                orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-                orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+                orderTotalPrice: totalPrice,
+                orderOriginPrice: printPrice,
                 orderConstructionFee: bookingStart.priceInfo.arf,
                 orderFuelTax: bookingStart.priceInfo.tof,
-                orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+                orderRealPrice: realPrice,
                 orderAgent: bookingStart.extInfo.clientId,
-                passengerName: orderInfo.passengers[0].name,
-                passengerType: orderInfo.passengers[0].type,
-                passengerIdentifyType: orderInfo.passengers[0].cardType,
-                passengerIdentify: identify,
-                passengerTicketNo: orderInfo.passengers[0].ticketNo,
-                passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                 flightNo: orderInfo.flightInfo[0].flightNum,
                 flightDate: Date.parse(bookings.sdate),
                 flightDeparture: orderInfo.flightInfo[0].dptCity,
@@ -1256,31 +1291,52 @@ router.post('/BookingOrder', async (req, res, next) => {
                 flightCabin: orderInfo.flightInfo[0].cabin,
                 notice: orderInfo.other.tgqMsg,
             });
-            order = await Api.order(name, cardType, identify, birthday, sex, bookingEnd);
+            order = await Api.order(req.body.passengers.map((e) => {
+                return {
+                    "name": e.name,
+                    "cardNo": e.cardNum,
+                    "birthday": e.birthday,
+                    "sex": e.gender == 'M' ? 0 : 1,
+                    "cardType": e.cardType
+                }
+            }), bookingEnd);
             orderInfo = await Api.orderDetail(order.orderNo);
             if (!order || !orderInfo.flightInfo) {
                 throw "返程预约失败";
             }
             arrTime = orderInfo.flightInfo[0].deptTime;
-            totalPrice += orderInfo.passengerTypes[0].allPrices;
+            totalPrice = eval(orderInfo.passengerTypes.map(((e) => {
+                return e.allPrices;
+            })).join("+"));
+            printPrice = eval(orderInfo.passengerTypes.map(((e) => {
+                return e.printPrice;
+            })).join("+"));
+            realPrice = eval(orderInfo.passengerTypes.map(((e) => {
+                return e.realPrice;
+            })).join("+"));
+            for (let i = 0; i < req.body.passengers.length; i++) {
+                let e = req.body.passengers[i];
+                await User.insert({
+                    groupId: groupId,
+                    orderNo: order.id,
+                    orderId: orderInfo.detail.orderNo,
+                    passengerName: e.name,
+                    passengerIdentifyType: e.cardType,
+                    passengerIdentify: e.cardNum,
+                })
+            }
             await Order.insertOrUpdate({
                 createAt: new Date().getTime(),
                 groupId: groupId,
                 orderId: order.id,
                 orderNo: orderInfo.detail.orderNo,
                 orderStatus: orderInfo.detail.status,
-                orderTotalPrice: orderInfo.passengerTypes[0].allPrices,
-                orderOriginPrice: orderInfo.passengerTypes[0].printPrice,
+                orderTotalPrice: totalPrice,
+                orderOriginPrice: printPrice,
                 orderConstructionFee: bookingEnd.priceInfo.arf,
                 orderFuelTax: bookingEnd.priceInfo.tof,
-                orderRealPrice: orderInfo.passengerTypes[0].realPrice,
+                orderRealPrice: realPrice,
                 orderAgent: bookingEnd.extInfo.clientId,
-                passengerName: orderInfo.passengers[0].name,
-                passengerType: orderInfo.passengers[0].type,
-                passengerIdentifyType: orderInfo.passengers[0].cardType,
-                passengerIdentify: identify,
-                passengerTicketNo: orderInfo.passengers[0].ticketNo,
-                passengerInsuranceNo: orderInfo.passengers[0].insuranceNo,
                 flightNo: orderInfo.flightInfo[0].flightNum,
                 flightDate: Date.parse(bookings.edate),
                 flightDeparture: orderInfo.flightInfo[0].dptCity,

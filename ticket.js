@@ -1,5 +1,6 @@
 const Order = require("./model/order");
 const Api = require("./lib/flight");
+const User = require("./model/user");
 
 setInterval(async () => {
     let orders = await Order.find({});
@@ -15,11 +16,23 @@ setInterval(async () => {
                 let o = await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,
                     orderStatus: order.detail.status,
-                    notice: order.other.tgqMsg,
-                    passengerTicketTime: new Date().getTime(),
-                    passengerTicketNo: order.passengers[0].ticketNo
+                    notice: order.other.tgqMsg
                 });
-                await Api.sendTicket(o, tag);
+                for (let j = 0; j < order.passengers.length; j++) {
+                    let r = order.passengers[j];
+                    await User.updateByCon({
+                        passengerName: r.name
+                    }, {
+                        passengerTicketTime: new Date().getTime(),
+                        passengerTicketNo: r.ticketNo
+                    })
+                }
+                let us = await User.find({orderNo: order.detail.orderNo})
+                if (us.every((e) => {
+                    return e.passengerTicketNo != null;
+                })) {
+                    await Api.sendTicket(o, tag);
+                }
             } else {
                 await Order.insertOrUpdate({
                     orderNo: order.detail.orderNo,

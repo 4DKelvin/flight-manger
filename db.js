@@ -12,13 +12,6 @@ module.exports = {
         orderFuelTax: Number,
         orderRealPrice: Number,
         orderAgent: String,
-        passengerName: String,
-        passengerType: String,
-        passengerIdentifyType: String,
-        passengerIdentify: String,
-        passengerTicketNo: String,
-        passengerTicketTime: Number,
-        passengerInsuranceNo: String,
         flightNo: String,
         flightDate: String,
         flightDeparture: String,
@@ -35,6 +28,18 @@ module.exports = {
         operator: String,
         lock: String,
         groupId: String
+    }),
+    plane_passenger:mongoose.model('plane_passenger', {
+        groupId:String,
+        orderNo:String,
+        orderId:String,
+        passengerName: String,
+        passengerType: String,
+        passengerIdentifyType: String,
+        passengerIdentify: String,
+        passengerTicketNo: String,
+        passengerTicketTime: Number,
+        passengerInsuranceNo: String
     }),
     plane_customer: mongoose.model('plane_customer', {
         name: String,
